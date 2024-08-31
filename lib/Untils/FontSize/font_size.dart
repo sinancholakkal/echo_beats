@@ -1,0 +1,2 @@
+
+double appNameSize=80;
