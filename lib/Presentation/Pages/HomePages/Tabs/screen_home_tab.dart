@@ -8,6 +8,7 @@ import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 class HomeTab extends StatefulWidget {
   @override
@@ -147,8 +148,7 @@ class _HomeTabState extends State<HomeTab> {
                     valueListenable: playPauseList[index],
                     builder: (BuildContext context, bool value, Widget? child) {
                       return musicCard(
-                          image:
-                              "https://i.ytimg.com/vi/RgOEKdA2mlw/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAmheQ8_nbR7Trrpapl6B7Ko0xKkw",
+                          queryArtWidget: QueryArtworkWidget(id: 1, type: ArtworkType.AUDIO),
                           musicName: "Water Packet - Video song",
                           artistName: "Sun Tv",
                           operation: () {

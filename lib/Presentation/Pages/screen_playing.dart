@@ -1,23 +1,88 @@
+import 'dart:developer';
+
 import 'package:echo_beats_music/Presentation/Pages/Settigs/settings.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:marquee_text/marquee_text.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
-class ScreenPlaying extends StatelessWidget {
-  String image;
+class ScreenPlaying extends StatefulWidget {
+  QueryArtworkWidget? queryArtworkWidget;
   String songName;
   String artistName;
+  String? image;
+  Uri? urii;
+  final AudioPlayer? audioPlayer;
+  int? id;
+  String? album;
   ScreenPlaying({
+    this.audioPlayer,
     super.key,
-    required this.image,
+    this.image,
     required this.artistName,
     required this.songName,
+    this.queryArtworkWidget,
+    this.urii,
+    this.id,
+    this.album,
   });
 
+  @override
+  State<ScreenPlaying> createState() => _ScreenPlayingState();
+}
+
+class _ScreenPlayingState extends State<ScreenPlaying> {
   final ValueNotifier<bool> _isFavorate = ValueNotifier<bool>(true);
+
   final ValueNotifier<bool> _playPause = ValueNotifier<bool>(true);
+  final ValueNotifier<Duration> _duration =
+      ValueNotifier<Duration>(const Duration());
+  final ValueNotifier<Duration> _position =
+      ValueNotifier<Duration>(const Duration());
+
+  playSong() {
+    try {
+      // Using ConcatenatingAudioSource with MediaItem
+      final audioSource = ConcatenatingAudioSource(
+        children: [
+          AudioSource.uri(
+            widget.urii!,
+            tag: MediaItem(
+              id: "${widget.id}",
+              album: widget.album,
+              title: widget.songName,
+              artUri: Uri.parse('https://example.com/albumart.jpg'),
+            ),
+          ),
+        ],
+      );
+
+      widget.audioPlayer!.setAudioSource(audioSource);
+      widget.audioPlayer!.play();
+    } on Exception {
+      log("Error in parsing");
+    }
+
+    //For duration--------
+    widget.audioPlayer?.durationStream.listen((d) {
+      _duration.value = d!;
+    });
+
+    //position----
+    widget.audioPlayer?.positionStream.listen((p) {
+      _position.value = p;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    playSong();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +91,8 @@ class ScreenPlaying extends StatelessWidget {
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          //gradient: AppColors.background,
-          color: Theme.of(context).scaffoldBackgroundColor
-        ),
+            //gradient: AppColors.background,
+            color: Theme.of(context).scaffoldBackgroundColor),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -82,11 +146,12 @@ class ScreenPlaying extends StatelessWidget {
                   height: 300,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(40),
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: NetworkImage(image),
-                    ),
+                    // image: DecorationImage(
+                    //   fit: BoxFit.cover,
+                    //   image: NetworkImage(image),
+                    // ),
                   ),
+                  child: widget.queryArtworkWidget,
                 ),
                 sizeBox(h: 40),
                 //Music name------------------
@@ -97,7 +162,7 @@ class ScreenPlaying extends StatelessWidget {
                       MarqueeText(
                         speed: 30,
                         text: TextSpan(
-                            text: songName,
+                            text: widget.songName,
                             style: TextStyle(
                                 fontSize: 40,
                                 fontWeight: FontWeight.bold,
@@ -106,7 +171,7 @@ class ScreenPlaying extends StatelessWidget {
                       MarqueeText(
                         speed: 30,
                         text: TextSpan(
-                            text: artistName,
+                            text: widget.artistName,
                             style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -117,13 +182,30 @@ class ScreenPlaying extends StatelessWidget {
                 ),
                 Column(
                   children: [
-                    Slider(
-                      value: 40,
-                      min: 0,
-                      max: 100,
-                      onChanged: (val) {},
-                      activeColor: white,
-                      inactiveColor: Colors.grey,
+                    ValueListenableBuilder(
+                      valueListenable: _position,
+                      builder: (BuildContext context, pValue, Widget? child) {
+                        return ValueListenableBuilder(
+                          valueListenable: _duration,
+                          builder:
+                              (BuildContext context, dValue, Widget? child) {
+                            return Slider(
+                              value: pValue.inSeconds.toDouble(),
+                              min: const Duration(microseconds: 0)
+                                  .inSeconds
+                                  .toDouble(),
+                              max: dValue.inSeconds.toDouble(),
+                              onChanged: (val) {
+                                changeToSecond(val.toInt());
+                                _position.value =
+                                    Duration(seconds: val.toInt());
+                              },
+                              activeColor: white,
+                              inactiveColor: Colors.grey,
+                            );
+                          },
+                        );
+                      },
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -131,20 +213,32 @@ class ScreenPlaying extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           //music starting time------------
-                          Text(
-                            "01:26",
-                            style: TextStyle(
-                              color: white.withOpacity(0.8),
-                              fontWeight: FontWeight.w600,
-                            ),
+                          ValueListenableBuilder(
+                            valueListenable: _position,
+                            builder:
+                                (BuildContext context, value, Widget? child) {
+                              return Text(
+                                value.toString().split('.')[0],
+                                style: TextStyle(
+                                  color: white.withOpacity(0.8),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              );
+                            },
                           ),
                           //Music ending time---------------
-                          Text(
-                            "02:10",
-                            style: TextStyle(
-                              color: white.withOpacity(0.8),
-                              fontWeight: FontWeight.w600,
-                            ),
+                          ValueListenableBuilder(
+                            valueListenable: _duration,
+                            builder:
+                                (BuildContext context, value, Widget? child) {
+                              return Text(
+                                value.toString().split('.')[0],
+                                style: TextStyle(
+                                  color: white.withOpacity(0.8),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              );
+                            },
                           )
                         ],
                       ),
@@ -180,6 +274,11 @@ class ScreenPlaying extends StatelessWidget {
                         return IconButton(
                           onPressed: () {
                             _playPause.value = !_playPause.value;
+                            if (_playPause.value == false) {
+                              widget.audioPlayer!.pause();
+                            } else {
+                              widget.audioPlayer!.play();
+                            }
                           },
                           icon: Icon(
                             value
@@ -224,5 +323,11 @@ class ScreenPlaying extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  //For rage. change to seconds
+  void changeToSecond(int second) {
+    Duration duration = Duration(seconds: second);
+    widget.audioPlayer!.seek(duration);
   }
 }

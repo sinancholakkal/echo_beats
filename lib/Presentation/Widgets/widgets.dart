@@ -1,17 +1,18 @@
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:marquee_text/marquee_text.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 // Search fieald------------------------
 
 Widget searchField(
     {required Color color,
     required String hint,
-     IconData? iconData,
-     IconButton? iconButton,
+    IconData? iconData,
+    IconButton? iconButton,
     required bool showCursor,
     required void Function() onTap,
-    required TextInputType type
-    }) {
+    required TextInputType type}) {
   return TextFormField(
     keyboardType: type,
     onTap: onTap,
@@ -28,7 +29,11 @@ Widget searchField(
             BorderRadius.circular(20.0), // Rounded corners when focused
         borderSide: BorderSide.none, // No visible border when focused
       ),
-      prefixIcon:iconButton ?? Icon(iconData,color: Colors.grey,) ,
+      prefixIcon: iconButton ??
+          Icon(
+            iconData,
+            color: Colors.grey,
+          ),
       hintText: hint,
       hintStyle: const TextStyle(
         color: Colors.grey,
@@ -38,12 +43,12 @@ Widget searchField(
 }
 
 //Card fave and shuffle---------------------------
-Widget homeCard(
-    {required List<Color> color,
-    required IconData iconData,
-    required String text,
-    required void Function() onTap,
-    }) {
+Widget homeCard({
+  required List<Color> color,
+  required IconData iconData,
+  required String text,
+  required void Function() onTap,
+}) {
   return Expanded(
     child: Container(
       height: 80,
@@ -82,13 +87,15 @@ Widget homeCard(
 
 //music card--------
 Widget musicCard({
-  required String image,
+  //AssetImage? image,
   required String musicName,
   required String artistName,
   required void Function() operation,
   IconButton? IconButton,
   PopupMenuButton? PopupMenuButton,
-  required BuildContext context
+  required BuildContext context,
+  //required ImageProvider imageProvider,
+  required QueryArtworkWidget queryArtWidget,
 }) {
   return Card(
     //shadowColor: Colors.black,
@@ -101,28 +108,15 @@ Widget musicCard({
           onTap: operation,
           subtitleTextStyle:
               const TextStyle(color: white, fontWeight: FontWeight.bold),
-          leading: Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: NetworkImage(
-                  image,
-                ),
-              ),
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
+          leading: queryArtWidget,
           title: Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              musicName,
-              style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: white,
-                  overflow: TextOverflow.ellipsis),
+            child: MarqueeText(
+              speed: 14,
+              text: TextSpan(
+                  text: musicName,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold, color: white)),
             ),
           ),
           subtitle: Text(artistName),

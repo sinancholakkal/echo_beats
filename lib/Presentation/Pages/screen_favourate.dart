@@ -3,6 +3,7 @@ import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 class ScreenFavourate extends StatelessWidget {
   const ScreenFavourate({super.key});
@@ -34,8 +35,7 @@ class ScreenFavourate extends StatelessWidget {
               //Music List----------------------------------------------
               children: List.generate(10, (index) {
                 return musicCard(
-                  image:
-                      "https://m.timesofindia.com/photo/107219750/size-193191/107219750.jpg",
+                  queryArtWidget: QueryArtworkWidget(id: 1, type: ArtworkType.AUDIO),
                   musicName: "Katchi Sera",
                   artistName: "Sai Abhyankkar",
                   //IconButton: ,
