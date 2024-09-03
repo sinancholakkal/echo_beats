@@ -1,5 +1,4 @@
 import 'package:echo_beats_music/Presentation/Pages/screen_login.dart';
-import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:lottie/lottie.dart';

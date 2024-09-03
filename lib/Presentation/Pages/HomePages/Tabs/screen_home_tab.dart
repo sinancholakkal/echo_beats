@@ -152,16 +152,16 @@ class _HomeTabState extends State<HomeTab> {
                           musicName: "Water Packet - Video song",
                           artistName: "Sun Tv",
                           operation: () {
-                            Get.to(
-                              () => ScreenPlaying(
-                                image:
-                                    "https://i.ytimg.com/vi/RgOEKdA2mlw/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAmheQ8_nbR7Trrpapl6B7Ko0xKkw",
-                                artistName: "Sun Tv",
-                                songName: "Water Packet - Video song",
-                              ),
-                              transition: Transition.circularReveal,
-                              duration: Duration(seconds: 1),
-                            );
+                            // Get.to(
+                            //   () => ScreenPlaying(
+                            //     image:
+                            //         "https://i.ytimg.com/vi/RgOEKdA2mlw/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAmheQ8_nbR7Trrpapl6B7Ko0xKkw",
+                            //     artistName: "Sun Tv",
+                            //     songName: "Water Packet - Video song",
+                            //   ),
+                            //   transition: Transition.circularReveal,
+                            //   duration: Duration(seconds: 1),
+                            // );
                           },
                           IconButton: IconButton(
                               onPressed: () {

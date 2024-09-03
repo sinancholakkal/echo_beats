@@ -1,8 +1,7 @@
-import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
+
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:get/route_manager.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class ScreenShuffle extends StatelessWidget {
@@ -51,15 +50,15 @@ class ScreenShuffle extends StatelessWidget {
                   ),
                   //Passing data to playing Screen
                   operation: () {
-                    Get.to(
-                        () => ScreenPlaying(
-                              image:
-                                  "https://m.timesofindia.com/photo/107219750/size-193191/107219750.jpg",
-                              artistName: "Sai Abhyankkar",
-                              songName: "Katchi Sera",
-                            ),
-                        transition: Transition.cupertino,
-                        duration: const Duration(seconds: 1));
+                    // Get.to(
+                    //     () => ScreenPlaying(
+                    //           image:
+                    //               "https://m.timesofindia.com/photo/107219750/size-193191/107219750.jpg",
+                    //           artistName: "Sai Abhyankkar",
+                    //           songName: "Katchi Sera",
+                    //         ),
+                    //     transition: Transition.cupertino,
+                    //     duration: const Duration(seconds: 1));
                   },
                   context: context,
                 );

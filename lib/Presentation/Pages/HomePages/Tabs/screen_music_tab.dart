@@ -16,17 +16,19 @@ import 'package:on_audio_query/on_audio_query.dart';
 class MusicTab extends StatelessWidget {
   MusicTab({super.key});
   ValueNotifier<bool> listToGrid = ValueNotifier<bool>(false);
-  final _audioQuery = OnAudioQuery();
-  final AudioPlayer _audioPlayer= AudioPlayer();
-  ValueNotifier<int?> songCount=ValueNotifier<int?>(0);
+   final _audioQuery = OnAudioQuery();
+  // final AudioPlayer _audioPlayer = AudioPlayer();
+  ValueNotifier<int?> songCount = ValueNotifier<int?>(null);
 
-  playSong(String? uri){
-    try{
-      _audioPlayer.setAudioSource(
-      AudioSource.uri(Uri.parse(uri!)),
-    );
-    _audioPlayer.play();
-    }on Exception{
+  List<SongModel> allSong = [];
+
+  playSong(String? uri) {
+    try {
+      AudioPlayerService.player.setAudioSource(
+        AudioSource.uri(Uri.parse(uri!)),
+      );
+      AudioPlayerService.player.play();
+    } on Exception {
       log("Error in parsing");
     }
   }
@@ -42,25 +44,43 @@ class MusicTab extends StatelessWidget {
               sizeBox(h: 40),
               ValueListenableBuilder(
                 valueListenable: songCount,
-                builder: (BuildContext context, value, Widget? child) { 
+                builder: (BuildContext context, value, Widget? child) {
+                  
                   return searchField(
-                  color: white,
-                  hint: "Search by name $value",
-                  iconData: Icons.search,
-                  showCursor: false,
-                  onTap: () {
-                    Get.to(() => ScreenSearch(),
-                        transition: Transition.cupertino,
-                        duration: const Duration(seconds: 1));
-                  },
-                  type: TextInputType.none,
-                );
-                 },
-                
+                    color: white,
+                    hint: "Search by name ${value??""}",
+                    iconData: Icons.search,
+                    showCursor: false,
+                    onTap: () {
+                      Get.to(() => const ScreenSearch(),
+                          transition: Transition.cupertino,
+                          duration: const Duration(seconds: 1));
+                    },
+                    type: TextInputType.none,
+                  );
+                },
               ),
               sizeBox(h: 20),
               Row(
                 children: [
+                  //Play all song Button----------
+                  IconButton(
+                      onPressed: () {
+                        Get.to(
+                            () => ScreenPlaying(
+                              idx: 0,
+                                  
+                                 // audioPlayer: AudioPlayerService.player,
+                                  songModelList: allSong,
+                                ),
+                            transition: Transition.cupertino,
+                            duration: const Duration(seconds: 1));
+                      },
+                      icon: const Icon(
+                        Icons.play_circle,
+                        color: white,
+                        size: 40,
+                      )),
                   const Text(
                     "All Songs",
                     style: TextStyle(
@@ -114,7 +134,13 @@ class MusicTab extends StatelessWidget {
                   ignoreCase: true,
                 ),
                 builder: (context, item) {
-                  songCount.value=item.data?.length;
+                  //Adding song count ---------------------------------
+                  if (item.connectionState == ConnectionState.done) {
+                    // Update the song count only when the data is loaded
+                    if (item.data != null) {
+                      songCount.value = item.data!.length;
+                    }
+                  }
                   print(item.data);
                   if (item.data == null) {
                     return const Center(
@@ -140,6 +166,7 @@ class MusicTab extends StatelessWidget {
                           itemCount: item.data!
                               .length, // Replace with actual count of songs
                           itemBuilder: (BuildContext context, int index) {
+                            allSong.addAll(item.data!);
                             return musicCard(
                               //Image song------------------------
                               queryArtWidget: QueryArtworkWidget(
@@ -161,24 +188,10 @@ class MusicTab extends StatelessWidget {
                                 //playSong(item.data![index].uri);
                                 Get.to(
                                     () => ScreenPlaying(
-                                      //image----
-                                      album: item.data![index].album,
-                                      id: item.data![index].id,
-                                          queryArtworkWidget:
-                                              QueryArtworkWidget(
-                                            id: item.data![index].id,
-                                            type: ArtworkType.AUDIO,
-                                            nullArtworkWidget: const Icon(
-                                              Icons.music_note,
-                                              size: 90,
-                                              color: white,
-                                            ),
-                                          ),
-                                          artistName:
-                                              "${item.data![index].artist}",
-                                          songName: item.data![index].displayNameWOExt,
-                                          urii: item.data![index].uri != null ? Uri.parse(item.data![index].uri!) : null,
-                                          audioPlayer: _audioPlayer,
+                                          
+                                        // audioPlayer: AudioPlayerService.player,
+                                          songModelList: item.data!,
+                                          idx: index,
                                         ),
                                     transition: Transition.cupertino,
                                     duration: const Duration(seconds: 1));
@@ -210,20 +223,10 @@ class MusicTab extends StatelessWidget {
                               onTap: () {
                                 Get.to(
                                     () => ScreenPlaying(
-                                      //image----
-                                          queryArtworkWidget:
-                                              QueryArtworkWidget(
-                                            id: item.data![index].id,
-                                            type: ArtworkType.AUDIO,
-                                            nullArtworkWidget: const Icon(
-                                              Icons.music_note,
-                                              size: 90,
-                                              color: white,
-                                            ),
-                                          ),
-                                          artistName:
-                                              "${item.data![index].artist}",
-                                          songName: item.data![index].displayNameWOExt,
+                                      idx: index,
+                                         //audioPlayer: AudioPlayerService.player,
+                                          songModelList: allSong,
+                                          
                                         ),
                                     transition: Transition.cupertino,
                                     duration: const Duration(seconds: 1));
@@ -264,7 +267,7 @@ class MusicTab extends StatelessWidget {
                                         text: TextSpan(
                                             text: item
                                                 .data![index].displayNameWOExt,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
                                                 color: white)),
@@ -274,7 +277,7 @@ class MusicTab extends StatelessWidget {
                                       speed: 14,
                                       text: TextSpan(
                                           text: "${item.data![index].artist}",
-                                          style: TextStyle(
+                                          style:const TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold,
                                               color: white)),

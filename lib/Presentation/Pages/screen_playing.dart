@@ -1,8 +1,12 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:echo_beats_music/Presentation/Pages/Settigs/settings.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
+import 'package:echo_beats_music/Untils/constant/constent.dart';
+import 'package:echo_beats_music/database/functions/favourite/db_function.dart';
+import 'package:echo_beats_music/database/models/favourite/favourite_class_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:just_audio/just_audio.dart';
@@ -11,24 +15,15 @@ import 'package:marquee_text/marquee_text.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class ScreenPlaying extends StatefulWidget {
-  QueryArtworkWidget? queryArtworkWidget;
-  String songName;
-  String artistName;
-  String? image;
-  Uri? urii;
-  final AudioPlayer? audioPlayer;
-  int? id;
-  String? album;
+  //final AudioPlayer audioPlayer;
+  final List<dynamic> songModelList;
+  int idx;
+
   ScreenPlaying({
-    this.audioPlayer,
+    //required this.audioPlayer,
+    required this.idx,
+    required this.songModelList,
     super.key,
-    this.image,
-    required this.artistName,
-    required this.songName,
-    this.queryArtworkWidget,
-    this.urii,
-    this.id,
-    this.album,
   });
 
   @override
@@ -36,52 +31,103 @@ class ScreenPlaying extends StatefulWidget {
 }
 
 class _ScreenPlayingState extends State<ScreenPlaying> {
-  final ValueNotifier<bool> _isFavorate = ValueNotifier<bool>(true);
-
+  final ValueNotifier<bool> _isFavorate = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _playPause = ValueNotifier<bool>(true);
   final ValueNotifier<Duration> _duration =
       ValueNotifier<Duration>(const Duration());
   final ValueNotifier<Duration> _position =
       ValueNotifier<Duration>(const Duration());
 
-  playSong() {
+  List<AudioSource> songList = [];
+  ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
+  final _audioQuery = OnAudioQuery();
+
+  void playSong() async {
     try {
-      // Using ConcatenatingAudioSource with MediaItem
-      final audioSource = ConcatenatingAudioSource(
-        children: [
+      currentIndex.value = widget.idx;
+      songList.clear(); // Clear the previous song list to avoid duplication
+      for (var element in widget.songModelList) {
+        songList.add(
           AudioSource.uri(
-            widget.urii!,
+            Uri.parse(element.uri!),
             tag: MediaItem(
-              id: "${widget.id}",
-              album: widget.album,
-              title: widget.songName,
-              artUri: Uri.parse('https://example.com/albumart.jpg'),
+              id: element.id.toString(),
+              album: element.album ?? "No Album",
+              title: element.displayNameWOExt,
+              artUri: Uri.parse(element.id.toString()),
             ),
           ),
-        ],
+        );
+      }
+
+      // പ്ലേയർ റീസെറ്റ് ചെയ്യുക
+      await AudioPlayerService.player.setAudioSource(
+        ConcatenatingAudioSource(children: songList),
+        initialIndex: widget.idx,
       );
+      // AudioPlayerService.player.play(); // Start playing the song
 
-      widget.audioPlayer!.setAudioSource(audioSource);
-      widget.audioPlayer!.play();
-    } on Exception {
-      log("Error in parsing");
+      // // Listen for changes in duration and position
+      // AudioPlayerService.player.durationStream.listen((d) {
+      //   if (d != null) {
+      //     _duration.value = d;
+      //   }
+      // });
+
+      // AudioPlayerService.player.positionStream.listen((p) {
+      //   _position.value = p;
+      // });
+
+      // Listen for the current song index change
+      AudioPlayerService.player.currentIndexStream.listen((index) {
+        if (index != null) {
+          currentIndex.value = index;
+          chekk();
+        }
+      });
+    } on Exception catch (e) {
+      log("Error in parsing: $e");
     }
+  }
 
-    //For duration--------
-    widget.audioPlayer?.durationStream.listen((d) {
-      _duration.value = d!;
-    });
+//Chekking available favorite list
+  void chekk() {
 
-    //position----
-    widget.audioPlayer?.positionStream.listen((p) {
-      _position.value = p;
-    });
+    final currentSong = widget.songModelList[currentIndex.value].id;
+    _isFavorate.value = false;
+    for (int i = 0; i < favouriteClassModelList.value.length; i++) {
+      if (favouriteClassModelList.value[i].id == currentSong) {
+        _isFavorate.value = true;
+        break;
+      }
+    }
+  }
+
+  void durationSet(){
+    
+     AudioPlayerService.player.durationStream.listen((d) {
+        if (d != null) {
+          _duration.value = d;
+        }
+      });
+
+        AudioPlayerService.player.positionStream.listen((p) {
+        _position.value = p;
+      });
   }
 
   @override
   void initState() {
+
     super.initState();
+      playSong();
+    AudioPlayerService.player.play();
+   durationSet();
+
+
+
     playSong();
+    chekk();
   }
 
   @override
@@ -91,8 +137,8 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-            //gradient: AppColors.background,
-            color: Theme.of(context).scaffoldBackgroundColor),
+          color: Theme.of(context).scaffoldBackgroundColor,
+        ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -101,32 +147,31 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                 sizeBox(h: 10),
                 Row(
                   children: [
-                    //Back Button---------
                     IconButton(
-                        onPressed: () {
-                          Get.back();
-                        },
-                        icon: const Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 40,
-                          color: white,
-                        )),
+                      onPressed: () {
+                        Get.back();
+                      },
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 40,
+                        color: white,
+                      ),
+                    ),
                     const Spacer(),
-                    //Share Button--------------
                     IconButton(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.share,
-                          size: 30,
-                          color: white,
-                        )),
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.share,
+                        size: 30,
+                        color: white,
+                      ),
+                    ),
                     sizeBox(w: 12),
-                    //Menu Button-----------------
                     PopupMenuButton(
                       itemBuilder: (context) {
                         return [
                           PopupMenuItem(
-                            child: Text("Settigs"),
+                            child: Text("Settings"),
                             onTap: () {
                               Get.to(() => const ScreenSettings(),
                                   transition: Transition.cupertino);
@@ -140,48 +185,70 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                   ],
                 ),
                 sizeBox(h: 70),
-                //Music Image--------------------
                 Container(
                   width: 300,
                   height: 300,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(40),
-                    // image: DecorationImage(
-                    //   fit: BoxFit.cover,
-                    //   image: NetworkImage(image),
-                    // ),
                   ),
-                  child: widget.queryArtworkWidget,
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: currentIndex,
+                    builder: (BuildContext context, value, Widget? child) {
+                      return QueryArtworkWidget(
+                        id: widget.songModelList[value].id,
+                        type: ArtworkType.AUDIO,
+                        nullArtworkWidget: const Icon(
+                          Icons.music_note,
+                          size: 90,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
+                  ),
                 ),
                 sizeBox(h: 40),
-                //Music name------------------
                 SizedBox(
                   width: 300,
                   child: Column(
                     children: [
-                      MarqueeText(
-                        speed: 30,
-                        text: TextSpan(
-                            text: widget.songName,
-                            style: TextStyle(
+                      ValueListenableBuilder<int>(
+                        valueListenable: currentIndex,
+                        builder: (BuildContext context, val, Widget? child) {
+                          return MarqueeText(
+                            speed: 30,
+                            text: TextSpan(
+                              text: widget.songModelList[val].displayNameWOExt,
+                              style: TextStyle(
                                 fontSize: 40,
                                 fontWeight: FontWeight.bold,
-                                color: white)),
+                                color: white,
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                      MarqueeText(
-                        speed: 30,
-                        text: TextSpan(
-                            text: widget.artistName,
-                            style: TextStyle(
+                      ValueListenableBuilder<int>(
+                        valueListenable: currentIndex,
+                        builder: (BuildContext context, value, Widget? child) {
+                          return MarqueeText(
+                            speed: 30,
+                            text: TextSpan(
+                              text: widget.songModelList[value].artist,
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: white)),
+                                color: white,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
                 ),
                 Column(
                   children: [
+                    //Slider -----------------------------------------------------------------
                     ValueListenableBuilder(
                       valueListenable: _position,
                       builder: (BuildContext context, pValue, Widget? child) {
@@ -212,7 +279,6 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          //music starting time------------
                           ValueListenableBuilder(
                             valueListenable: _position,
                             builder:
@@ -226,7 +292,6 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                               );
                             },
                           ),
-                          //Music ending time---------------
                           ValueListenableBuilder(
                             valueListenable: _duration,
                             builder:
@@ -239,17 +304,16 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                                 ),
                               );
                             },
-                          )
+                          ),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 ),
                 sizeBox(h: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    //repeate icon-----------
                     IconButton(
                       onPressed: () {},
                       icon: const Icon(
@@ -258,16 +322,16 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                         size: 30,
                       ),
                     ),
-                    //Back song icon-----------------------
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        AudioPlayerService.player.seekToPrevious();
+                      },
                       icon: const Icon(
                         Icons.skip_previous_rounded,
                         color: white,
                         size: 50,
                       ),
                     ),
-                    //Puse and play--------------
                     ValueListenableBuilder(
                       valueListenable: _playPause,
                       builder: (BuildContext context, value, Widget? child) {
@@ -275,9 +339,9 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                           onPressed: () {
                             _playPause.value = !_playPause.value;
                             if (_playPause.value == false) {
-                              widget.audioPlayer!.pause();
+                              AudioPlayerService.player.pause();
                             } else {
-                              widget.audioPlayer!.play();
+                              AudioPlayerService.player.play();
                             }
                           },
                           icon: Icon(
@@ -290,33 +354,39 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                         );
                       },
                     ),
-                    //Next Song------------
+                    //Skip button-------------------------------------------------------------
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        print("song forword------------------------------------");
+                        AudioPlayerService.player.seekToNext();
+                      },
                       icon: const Icon(
                         Icons.skip_next,
                         color: white,
                         size: 50,
                       ),
                     ),
-                    //Favorate icon---------------
+                    //Favourate------------------------------------------
                     ValueListenableBuilder(
                       valueListenable: _isFavorate,
                       builder: (BuildContext context, value, Widget? child) {
                         return IconButton(
+                          onPressed: () async {
+                            favSongAddOrDelete();
+                            _isFavorate.value = !value;
+                          },
                           icon: Icon(
-                            value ? Icons.favorite_border : Icons.favorite,
+                            value == false
+                                ? Icons.favorite_border
+                                : Icons.favorite,
                             color: white,
                             size: 30,
                           ),
-                          onPressed: () {
-                            _isFavorate.value = !_isFavorate.value;
-                          },
                         );
                       },
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -325,9 +395,35 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
     );
   }
 
-  //For rage. change to seconds
   void changeToSecond(int second) {
     Duration duration = Duration(seconds: second);
-    widget.audioPlayer!.seek(duration);
+    AudioPlayerService.player.seek(duration);
+  }
+
+  Future<void> favSongAddOrDelete() async {
+    print(
+        "$_isFavorate @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+
+    if (_isFavorate.value == false) {
+      print("Song added in favorite----------------------");
+      Uint8List? imagebyte;
+      if (await _audioQuery.queryArtwork(
+              widget.songModelList[currentIndex.value].id, ArtworkType.AUDIO) !=
+          null) {
+        imagebyte = await _audioQuery.queryArtwork(
+            widget.songModelList[currentIndex.value].id, ArtworkType.AUDIO);
+      }
+      final result = SongModelClass(
+          id: widget.songModelList[currentIndex.value].id,
+          displayNameWOExt:
+              widget.songModelList[currentIndex.value].displayNameWOExt,
+          artist: widget.songModelList[currentIndex.value].artist!,
+          uripath: widget.songModelList[currentIndex.value].uri,
+          imageUri: imagebyte ?? Uint8List(0));
+      addSongToFavourite(result);
+    } else {
+      deleteFromFavorite(widget.songModelList[currentIndex.value].id);
+      print("Deleted song ------------------------");
+    }
   }
 }
