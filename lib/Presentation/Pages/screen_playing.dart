@@ -38,6 +38,8 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
   final ValueNotifier<Duration> _position =
       ValueNotifier<Duration>(const Duration());
 
+      List<int> removeFromfav =[];
+
   List<AudioSource> songList = [];
   ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
   final _audioQuery = OnAudioQuery();
@@ -126,7 +128,7 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
 
 
 
-    playSong();
+    //playSong();
     chekk();
   }
 
@@ -357,8 +359,15 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                     //Skip button-------------------------------------------------------------
                     IconButton(
                       onPressed: () {
+                        print(AudioPlayerService().hashCode);
                         print("song forword------------------------------------");
-                        AudioPlayerService.player.seekToNext();
+
+                        if(AudioPlayerService.player.hasNext){
+                           AudioPlayerService.player.seekToNext();
+                        }else{
+                          print("No next Song");
+                        }
+                       
                       },
                       icon: const Icon(
                         Icons.skip_next,
@@ -418,12 +427,20 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
           displayNameWOExt:
               widget.songModelList[currentIndex.value].displayNameWOExt,
           artist: widget.songModelList[currentIndex.value].artist!,
-          uripath: widget.songModelList[currentIndex.value].uri,
+          uri: widget.songModelList[currentIndex.value].uri,
           imageUri: imagebyte ?? Uint8List(0));
       addSongToFavourite(result);
     } else {
-      deleteFromFavorite(widget.songModelList[currentIndex.value].id);
+      removeFromfav.add(widget.songModelList[currentIndex.value].id);
       print("Deleted song ------------------------");
+    }
+  }
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    for (var id in removeFromfav) {
+      deleteFromFavorite(id);
     }
   }
 }

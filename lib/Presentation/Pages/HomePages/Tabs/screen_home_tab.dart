@@ -1,3 +1,4 @@
+import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_music_tab.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_favourate.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
 import 'package:echo_beats_music/Presentation/Pages/Settigs/settings.dart';
@@ -25,7 +26,7 @@ class _HomeTabState extends State<HomeTab> {
     playPauseList =
         List.generate(length, (index) => ValueNotifier<bool>(false));
   }
-
+  MusicTab sam =MusicTab();
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -191,4 +192,19 @@ class _HomeTabState extends State<HomeTab> {
       ),
     );
   }
+
+  // Widget getSongs(){
+  //   return FutureBuilder<List<SongModel>>(
+  //          future: _audioQuery.querySongs(
+  //                 sortType: null,
+  //                 orderType: OrderType.ASC_OR_SMALLER,
+  //                 uriType: UriType.EXTERNAL,
+  //                 ignoreCase: true,
+  //               ),
+  //         builder: (BuildContext context, AsyncSnapshot<List<SongModel>> snapshot) { 
+            
+  //          },
+          
+  //       );
+  // }
 }

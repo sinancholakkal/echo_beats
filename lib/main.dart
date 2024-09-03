@@ -2,6 +2,7 @@
 import 'package:echo_beats_music/Presentation/Pages/screen_splash.dart';
 import 'package:echo_beats_music/Untils/Theme/them.dart';
 import 'package:echo_beats_music/database/models/favourite/favourite_class_model.dart';
+import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,6 +19,12 @@ Future<void> main() async {
   await Hive.initFlutter();
   if(!Hive.isAdapterRegistered(SongModelClassAdapter().typeId)){
     Hive.registerAdapter(SongModelClassAdapter());
+  }
+  if(!Hive.isAdapterRegistered(PlayListSongModelAdapter().typeId)){
+    Hive.registerAdapter(PlayListSongModelAdapter());
+  }
+  if(!Hive.isAdapterRegistered(PlaylistAdapter().typeId)){
+    Hive.registerAdapter(PlaylistAdapter());
   }
   runApp(const MyApp());
 }

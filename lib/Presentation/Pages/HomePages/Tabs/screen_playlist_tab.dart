@@ -1,14 +1,18 @@
-import 'package:echo_beats_music/Untils/Colors/colors.dart';
-import 'package:echo_beats_music/Untils/constant/constent.dart';
+import 'package:echo_beats_music/database/functions/playlist/db_function_playlist.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
+import 'package:echo_beats_music/Untils/Colors/colors.dart';
+import 'package:echo_beats_music/Untils/constant/constent.dart';
 
 class PlaylistTab extends StatelessWidget {
-   PlaylistTab({super.key});
+  PlaylistTab({super.key});
 
+  final TextEditingController _playlistTextController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
+    gettingPlaylist();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: SafeArea(
@@ -38,7 +42,7 @@ class PlaylistTab extends StatelessWidget {
                 ],
               ),
               sizeBox(h: 12),
-              //Create new Playlist-------------------
+              // Create new Playlist
               ListTile(
                 titleTextStyle: const TextStyle(
                     color: white, fontWeight: FontWeight.bold, fontSize: 18),
@@ -68,52 +72,78 @@ class PlaylistTab extends StatelessWidget {
                 },
               ),
               sizeBox(h: 36),
-              //PlayLists-----------------
+              // PlayLists
               const Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  "My Playlists (1)",
+                  "My Playlists",
                   style: TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 18, color: white),
                 ),
               ),
               sizeBox(h: 10),
-              Column(
-                children: List.generate(1, (index) {
-                  return ListTile(
-                    titleTextStyle: const TextStyle(
-                        color: white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18),
-                    subtitleTextStyle: const TextStyle(
-                        fontSize: 12,
-                        color: Color.fromARGB(255, 207, 200, 200)),
-                    leading: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.grey, // Top color
-                            Color.fromARGB(255, 19, 117, 198), // Bottom color
-                          ],
-                        ),
+              // Replace List.generate with ListView.builder
+              ValueListenableBuilder(
+                valueListenable: playlistsNotifier,
+                builder: (BuildContext context, value, Widget? child) {
+                  if (value.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "No PlayList",
+                        style: TextStyle(color: white),
                       ),
-                      child: const Icon(
-                        Icons.music_note,
-                        size: 40,
-                        color: white,
-                      ),
-                    ),
-                    title: const Text("Tamil songs"),
-                    subtitle: const Text("2 songs"),
-                    onTap: () {},
-                  );
-                }),
-              )
+                    );
+                  } else {
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: value.length,
+                      itemBuilder: (context, index) {
+                        //final playlist = playlists[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: ListTile(
+                            titleTextStyle: const TextStyle(
+                                color: white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18),
+                            subtitleTextStyle: const TextStyle(
+                                fontSize: 12,
+                                color: Color.fromARGB(255, 207, 200, 200)),
+                            leading: Container(
+                              width: 60,
+                              height: 60,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.grey, // Top color
+                                    Color.fromARGB(
+                                        255, 19, 117, 198), // Bottom color
+                                  ],
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.music_note,
+                                size: 40,
+                                color: white,
+                              ),
+                            ),
+                            title: Text(value[index].name),
+                            //subtitle: Text('subtitle'),
+                            onTap: () {
+                              // Handle playlist tap
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
             ],
           ),
         ),
@@ -127,19 +157,45 @@ class PlaylistTab extends StatelessWidget {
         builder: (_) {
           return AlertDialog(
             title: const Text("Create New Playlist"),
-            content: TextFormField(),
+            content: Form(
+              key: _formKey,
+              child: TextFormField(
+                controller: _playlistTextController,
+                validator: (val){
+                  if(val==null || val.isEmpty){
+                    return "Enter Playlist Name";
+                  }
+                  return null;
+                },
+              ),
+            ),
             actions: [
-              TextButton(onPressed: () {
-                Get.back();
-              }, child: const Text("Cancel",style: TextStyle(color: Colors.white),)),
+              TextButton(
+                  onPressed: () {
+                    Get.back();
+                  },
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(color: Colors.white),
+                  )),
               ElevatedButton(
                 style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                    AppColors.appNameColor
-                  )
+                    backgroundColor:
+                        WidgetStateProperty.all(AppColors.appNameColor)),
+                onPressed: () {
+                  if (_formKey.currentState!.validate()){
+                    print("validate------------------");
+                    createPlayList(playlistName: _playlistTextController.text);
+                    Navigator.of(context).pop();
+                    _playlistTextController.clear();
+                  }else{
+                    print("Not validated----------------");
+                  }
+                },
+                child: const Text(
+                  "Ok",
+                  style: TextStyle(color: white),
                 ),
-                onPressed: () {},
-                child: const Text("Ok",style: TextStyle(color: white),),
               )
             ],
           );

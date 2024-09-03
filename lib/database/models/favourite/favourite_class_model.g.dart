@@ -20,7 +20,7 @@ class SongModelClassAdapter extends TypeAdapter<SongModelClass> {
       id: fields[0] as int,
       displayNameWOExt: fields[1] as String,
       artist: fields[2] as String,
-      uripath: fields[3] as String?,
+      uri: fields[3] as String?,
       imageUri: fields[4] as Uint8List,
     );
   }
@@ -36,7 +36,7 @@ class SongModelClassAdapter extends TypeAdapter<SongModelClass> {
       ..writeByte(2)
       ..write(obj.artist)
       ..writeByte(3)
-      ..write(obj.uripath)
+      ..write(obj.uri)
       ..writeByte(4)
       ..write(obj.imageUri);
   }

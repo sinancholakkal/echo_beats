@@ -1,11 +1,11 @@
-
 import 'dart:typed_data';
 
-import 'package:hive_flutter/adapters.dart';
-part 'favourite_class_model.g.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+part 'playlist_model.g.dart';
 
 @HiveType(typeId: 0)
-class SongModelClass {
+class PlayListSongModel {
   @HiveField(0)
   int id;
 
@@ -21,10 +21,7 @@ class SongModelClass {
   @HiveField(4)
   Uint8List imageUri;
 
-  // @HiveField(5)
-  // bool isFavorite; 
-
-  SongModelClass({
+  PlayListSongModel({
     required this.id,
     required this.displayNameWOExt,
     required this.artist,
@@ -41,4 +38,15 @@ class SongModelClass {
   }
 }
 
+@HiveType(typeId: 1)
+class Playlist {
+  @HiveField(0)
+  int? id;
+  @HiveField(1)
+  final String name;
 
+  @HiveField(2)
+  final List<PlayListSongModel> songs;
+
+  Playlist({required this.name, this.songs = const [],this.id});
+}

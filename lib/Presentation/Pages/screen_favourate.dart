@@ -58,19 +58,18 @@ class ScreenFavourate extends StatelessWidget {
                       musicName: value[index].displayNameWOExt,
                       artistName: value[index].artist,
                       operation: () async {
+                        print("---------------------------------------------");
+                        print(favouriteClassModelList.value.length);
                         // Start by stopping any existing playback
                          AudioPlayerService.player.stop();
 
                         // Create the proper AudioSource with MediaItem
                         await AudioPlayerService.player.setAudioSource(
                           AudioSource.uri(
-                            Uri.parse(favouriteClassModelList.value[index].uripath!),
+                            Uri.parse(favouriteClassModelList.value[index].uri!),
                             tag: MediaItem(
                               id: favouriteClassModelList.value[index].id
                                   .toString(),
-                              // album:
-                              //     favouriteClassModelList.value[index].album ??
-                              //         '',
                               title: favouriteClassModelList
                                   .value[index].displayNameWOExt,
                               artist:
@@ -78,8 +77,6 @@ class ScreenFavourate extends StatelessWidget {
                             ),
                           ),
                         );
-                          //print(songmode)
-                       // Navigate to playing screen
                         Get.to(() => ScreenPlaying(
                              // audioPlayer: _audioPlayer,
                               idx: index,
