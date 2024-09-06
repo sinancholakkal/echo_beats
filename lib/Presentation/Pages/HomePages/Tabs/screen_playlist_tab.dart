@@ -1,5 +1,8 @@
+import 'package:echo_beats_music/Presentation/Pages/screen_playlist_songs.dart';
+import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/database/functions/playlist/db_function_playlist.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/route_manager.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
@@ -102,41 +105,63 @@ class PlaylistTab extends StatelessWidget {
                         //final playlist = playlists[index];
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: ListTile(
-                            titleTextStyle: const TextStyle(
-                                color: white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18),
-                            subtitleTextStyle: const TextStyle(
-                                fontSize: 12,
-                                color: Color.fromARGB(255, 207, 200, 200)),
-                            leading: Container(
-                              width: 60,
-                              height: 60,
-                              decoration: const BoxDecoration(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.grey, // Top color
-                                    Color.fromARGB(
-                                        255, 19, 117, 198), // Bottom color
-                                  ],
+                          child: Slidable(
+                            endActionPane: ActionPane(
+                              motion: StretchMotion(),
+                              children: [
+                                //slidable------------------
+                                SlidableAction(
+                                  onPressed: (context) {
+                                    showDelete(context: context, content: """Are you sure you want to delete the playlist '${value[index].name}'?""", title: "Delete Playlist", key: value[index].id!, playlistName: value[index].name);
+                                  },
+                                  icon: Icons.remove_circle,
+                                  label: "Remove",
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              titleTextStyle: const TextStyle(
+                                  color: white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18),
+                              subtitleTextStyle: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color.fromARGB(255, 207, 200, 200)),
+                              leading: Container(
+                                width: 60,
+                                height: 60,
+                                decoration: const BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10)),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.grey, // Top color
+                                      Color.fromARGB(
+                                          255, 19, 117, 198), // Bottom color
+                                    ],
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.music_note,
+                                  size: 40,
+                                  color: white,
                                 ),
                               ),
-                              child: const Icon(
-                                Icons.music_note,
-                                size: 40,
-                                color: white,
-                              ),
+                              //Title of playlists tab
+                              title: Text(value[index].name),
+                              subtitle: Text("${value[index].songs.length}"),
+                              onTap: () {
+                                print(
+                                    "${value[index].id.runtimeType} -----------------------------------------------");
+                                // Handle playlist tap
+                                Get.to(() => ScreenPlaylistSongs(
+                                    musics: value[index].songs,
+                                    playlistName: value[index].name,
+                                    indexOfPlaylist: index));
+                              },
                             ),
-                            title: Text(value[index].name),
-                            //subtitle: Text('subtitle'),
-                            onTap: () {
-                              // Handle playlist tap
-                            },
                           ),
                         );
                       },
@@ -161,8 +186,8 @@ class PlaylistTab extends StatelessWidget {
               key: _formKey,
               child: TextFormField(
                 controller: _playlistTextController,
-                validator: (val){
-                  if(val==null || val.isEmpty){
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
                     return "Enter Playlist Name";
                   }
                   return null;
@@ -183,12 +208,12 @@ class PlaylistTab extends StatelessWidget {
                     backgroundColor:
                         WidgetStateProperty.all(AppColors.appNameColor)),
                 onPressed: () {
-                  if (_formKey.currentState!.validate()){
+                  if (_formKey.currentState!.validate()) {
                     print("validate------------------");
                     createPlayList(playlistName: _playlistTextController.text);
                     Navigator.of(context).pop();
                     _playlistTextController.clear();
-                  }else{
+                  } else {
                     print("Not validated----------------");
                   }
                 },

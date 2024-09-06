@@ -15,4 +15,6 @@ class AppColors {
 const white=Colors.white;
 const black=Colors.black;
 const cardColor=Color.fromARGB(255, 210, 66, 174);
+const toastbgColor =  Color.fromARGB(153, 255, 255, 255);
+
 

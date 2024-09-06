@@ -1,5 +1,8 @@
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
+import 'package:echo_beats_music/database/functions/playlist/db_function_playlist.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/route_manager.dart';
 import 'package:marquee_text/marquee_text.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -149,3 +152,51 @@ Widget settingsListTile(
     onTap: onTap,
   );
 }
+
+
+//Alert dialog for delete
+void showDelete({
+  required BuildContext context,
+  required String title,
+  required String content,
+  required int key,
+  required String playlistName
+}) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(
+              onPressed: () {
+                Get.back();
+              },
+              child: const Text("Cancel",style: TextStyle(color: white),)),
+          ElevatedButton(
+            style: ButtonStyle(
+                backgroundColor:
+                    WidgetStateProperty.all(AppColors.appNameColor)),
+            onPressed: () {
+              deletePlaylist(key);
+              Get.back();
+              showAddedToast(msg:  "Playlist '$playlistName' deleted successfully");
+            },
+            child: const Text("Delete"),
+          )
+        ],
+      );
+    },
+  );
+}
+
+
+//toast message
+// ignore: prefer_function_declarations_over_variables
+final showAddedToast = ({required String msg}) {
+  Fluttertoast.showToast(
+    msg: msg,
+    backgroundColor: const Color.fromARGB(174, 255, 255, 255),
+  );
+};

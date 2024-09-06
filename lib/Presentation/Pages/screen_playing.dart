@@ -2,11 +2,14 @@ import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:echo_beats_music/Presentation/Pages/Settigs/settings.dart';
+import 'package:echo_beats_music/Presentation/Pages/screen_add_playlist.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
 import 'package:echo_beats_music/database/functions/favourite/db_function.dart';
+import 'package:echo_beats_music/database/functions/recentlyPlayed/db_function_recently_played.dart';
 import 'package:echo_beats_music/database/models/favourite/favourite_class_model.dart';
+import 'package:echo_beats_music/database/models/recentlyPlayed/recently_played_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:just_audio/just_audio.dart';
@@ -38,7 +41,7 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
   final ValueNotifier<Duration> _position =
       ValueNotifier<Duration>(const Duration());
 
-      List<int> removeFromfav =[];
+  List<int> removeFromfav = [];
 
   List<AudioSource> songList = [];
   ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
@@ -85,6 +88,7 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
         if (index != null) {
           currentIndex.value = index;
           chekk();
+          addSongRecently();
         }
       });
     } on Exception catch (e) {
@@ -94,7 +98,6 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
 
 //Chekking available favorite list
   void chekk() {
-
     final currentSong = widget.songModelList[currentIndex.value].id;
     _isFavorate.value = false;
     for (int i = 0; i < favouriteClassModelList.value.length; i++) {
@@ -105,28 +108,24 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
     }
   }
 
-  void durationSet(){
-    
-     AudioPlayerService.player.durationStream.listen((d) {
-        if (d != null) {
-          _duration.value = d;
-        }
-      });
+  void durationSet() {
+    AudioPlayerService.player.durationStream.listen((d) {
+      if (d != null) {
+        _duration.value = d;
+      }
+    });
 
-        AudioPlayerService.player.positionStream.listen((p) {
-        _position.value = p;
-      });
+    AudioPlayerService.player.positionStream.listen((p) {
+      _position.value = p;
+    });
   }
 
   @override
   void initState() {
-
     super.initState();
-      playSong();
+    playSong();
     AudioPlayerService.player.play();
-   durationSet();
-
-
+    durationSet();
 
     //playSong();
     chekk();
@@ -170,15 +169,25 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                     ),
                     sizeBox(w: 12),
                     PopupMenuButton(
+                      color: Colors.white,
                       itemBuilder: (context) {
                         return [
                           PopupMenuItem(
-                            child: Text("Settings"),
+                            child: const Text("Settings"),
                             onTap: () {
                               Get.to(() => const ScreenSettings(),
                                   transition: Transition.cupertino);
                             },
                           ),
+                          PopupMenuItem(
+                            child: const Text("Add to playlist"),
+                            onTap: () {
+                              Get.to(() => ScreenAddPlaylist(
+                                    songModel: widget
+                                        .songModelList[currentIndex.value],
+                                  ));
+                            },
+                          )
                         ];
                       },
                       iconColor: white,
@@ -360,14 +369,14 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                     IconButton(
                       onPressed: () {
                         print(AudioPlayerService().hashCode);
-                        print("song forword------------------------------------");
+                        print(
+                            "song forword------------------------------------");
 
-                        if(AudioPlayerService.player.hasNext){
-                           AudioPlayerService.player.seekToNext();
-                        }else{
+                        if (AudioPlayerService.player.hasNext) {
+                          AudioPlayerService.player.seekToNext();
+                        } else {
                           print("No next Song");
                         }
-                       
                       },
                       icon: const Icon(
                         Icons.skip_next,
@@ -435,6 +444,7 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
       print("Deleted song ------------------------");
     }
   }
+
   @override
   void dispose() {
     // TODO: implement dispose
@@ -442,5 +452,20 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
     for (var id in removeFromfav) {
       deleteFromFavorite(id);
     }
+  }
+
+// it is for add song into recent list
+  void addSongRecently() {
+    Uint8List? imagebyte;
+    final result = RecentlyPlayedModel(
+      id: widget.songModelList[currentIndex.value].id,
+      displayNameWOExt:
+          widget.songModelList[currentIndex.value].displayNameWOExt,
+      artist: widget.songModelList[currentIndex.value].artist!,
+      uri: widget.songModelList[currentIndex.value].uri,
+      imageUri: imagebyte ?? Uint8List(0),
+      timestamp: DateTime.now(),
+    );
+    addRecentlyPlayed(result);
   }
 }

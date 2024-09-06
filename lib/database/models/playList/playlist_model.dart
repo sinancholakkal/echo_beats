@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 part 'playlist_model.g.dart';
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 1)
 class PlayListSongModel {
   @HiveField(0)
   int id;
@@ -38,7 +38,7 @@ class PlayListSongModel {
   }
 }
 
-@HiveType(typeId: 1)
+@HiveType(typeId: 2)
 class Playlist {
   @HiveField(0)
   int? id;
@@ -46,7 +46,8 @@ class Playlist {
   final String name;
 
   @HiveField(2)
-  final List<PlayListSongModel> songs;
+   List<PlayListSongModel> songs;
 
-  Playlist({required this.name, this.songs = const [],this.id});
+ Playlist({required this.name, List<PlayListSongModel>? songs, this.id})
+      : this.songs = songs ?? [];  // I
 }

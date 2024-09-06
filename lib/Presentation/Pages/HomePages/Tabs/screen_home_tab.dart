@@ -7,6 +7,8 @@ import 'package:echo_beats_music/Presentation/Pages/screen_shuffle.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
+import 'package:echo_beats_music/database/functions/recentlyPlayed/db_function_recently_played.dart';
+import 'package:echo_beats_music/database/models/recentlyPlayed/recently_played_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -19,14 +21,15 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   late List<ValueNotifier<bool>> playPauseList;
   int _currenyPlayingIndex = -1;
+
   @override
   void initState() {
     super.initState();
-    int length = 10;
-    playPauseList =
-        List.generate(length, (index) => ValueNotifier<bool>(false));
+    // Initialize playPauseList with an empty list
+    playPauseList = [];
+    gettingRecentlyPlayedSong();
   }
-  MusicTab sam =MusicTab();
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -78,7 +81,7 @@ class _HomeTabState extends State<HomeTab> {
                 ),
               ),
               sizeBox(h: 30),
-              //Search Field-----------------------------
+              // Search Field
               searchField(
                 onTap: () {
                   Get.to(() => ScreenSearch(),
@@ -103,7 +106,7 @@ class _HomeTabState extends State<HomeTab> {
               sizeBox(h: 20),
               Row(
                 children: [
-                  //Shuffle------------------
+                  // Shuffle Button
                   homeCard(
                     color: [
                       const Color.fromARGB(255, 149, 17, 190),
@@ -117,6 +120,7 @@ class _HomeTabState extends State<HomeTab> {
                     },
                   ),
                   sizeBox(w: 10),
+                  // Favorite Button
                   homeCard(
                     color: [
                       const Color.fromARGB(255, 34, 77, 220),
@@ -131,80 +135,84 @@ class _HomeTabState extends State<HomeTab> {
                   ),
                 ],
               ),
-              //recent played songsss
-              sizeBox(h: 30),
-              const Align(
+              sizeBox(h: 16),
+              Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  "Recently Played",
-                  style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold, color: white),
-                ),
+                    "Last Session",
+                    style: TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold, color: white),
+                  ),
               ),
-              sizeBox(h: 30),
-              //recent played song card-------------------------
-              Column(
-                children: List.generate(10, (index) {
-                  return ValueListenableBuilder(
-                    valueListenable: playPauseList[index],
-                    builder: (BuildContext context, bool value, Widget? child) {
-                      return musicCard(
-                          queryArtWidget: QueryArtworkWidget(id: 1, type: ArtworkType.AUDIO),
-                          musicName: "Water Packet - Video song",
-                          artistName: "Sun Tv",
-                          operation: () {
-                            // Get.to(
-                            //   () => ScreenPlaying(
-                            //     image:
-                            //         "https://i.ytimg.com/vi/RgOEKdA2mlw/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLAmheQ8_nbR7Trrpapl6B7Ko0xKkw",
-                            //     artistName: "Sun Tv",
-                            //     songName: "Water Packet - Video song",
-                            //   ),
-                            //   transition: Transition.circularReveal,
-                            //   duration: Duration(seconds: 1),
-                            // );
-                          },
-                          IconButton: IconButton(
-                              onPressed: () {
-                                if (_currenyPlayingIndex != -1 &&
-                                    _currenyPlayingIndex != index) {
-                                  playPauseList[_currenyPlayingIndex].value =
-                                      false;
-                                }
-                                playPauseList[index].value = !value;
-                                _currenyPlayingIndex = index;
-                              },
-                              icon: Icon(
-                                //Icons.play_circle,
-                                value == false
-                                    ? Icons.play_circle
-                                    : Icons.pause_circle,
-                                color: white,
-                                size: 40,
-                              )), context: context);
-                    },
-                  );
-                }),
-              )
+              // Recently Played Songs
+              sizeBox(h: 16),
+              ValueListenableBuilder<List<RecentlyPlayedModel>>(
+                valueListenable: recentlyplayedNotifier,
+                builder: (BuildContext context, value, Widget? child) {
+                  // Update playPauseList if the length has changed
+                  if (playPauseList.length != value.length) {
+                    playPauseList = List.generate(
+                        value.length, (index) => ValueNotifier<bool>(false));
+                  }
+                  if (value.isEmpty ) {
+                    return Center(
+                      child: Text("No Song played"),
+                    );
+                  } else {
+                    final revers = value.reversed.toList();
+                    return Column(
+                      children: List.generate(
+                        revers.length,
+                        (index) {
+                          return ValueListenableBuilder<bool>(
+                            valueListenable: playPauseList[index],
+                            builder: (BuildContext context, bool isPlaying,
+                                Widget? child) {
+                              return musicCard(
+                                queryArtWidget: QueryArtworkWidget(
+                                  id: revers[index].id,
+                                  type: ArtworkType.AUDIO,
+                                  nullArtworkWidget: const Icon(
+                                    Icons.music_note,
+                                    size: 30,
+                                    color: white,
+                                  ),
+                                ),
+                                musicName: revers[index].displayNameWOExt,
+                                artistName: revers[index].artist,
+                                operation: () {},
+                                IconButton: IconButton(
+                                  onPressed: () {
+                                    if (_currenyPlayingIndex != -1 &&
+                                        _currenyPlayingIndex != index) {
+                                      playPauseList[_currenyPlayingIndex]
+                                          .value = false;
+                                    }
+                                    playPauseList[index].value = !isPlaying;
+                                    _currenyPlayingIndex = index;
+                                  },
+                                  icon: Icon(
+                                    isPlaying
+                                        ? Icons.pause_circle
+                                        : Icons.play_circle,
+                                    color: white,
+                                    size: 40,
+                                  ),
+                                ),
+                                context: context,
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    );
+                  }
+                },
+              ),
             ],
           ),
         ),
       ),
     );
   }
-
-  // Widget getSongs(){
-  //   return FutureBuilder<List<SongModel>>(
-  //          future: _audioQuery.querySongs(
-  //                 sortType: null,
-  //                 orderType: OrderType.ASC_OR_SMALLER,
-  //                 uriType: UriType.EXTERNAL,
-  //                 ignoreCase: true,
-  //               ),
-  //         builder: (BuildContext context, AsyncSnapshot<List<SongModel>> snapshot) { 
-            
-  //          },
-          
-  //       );
-  // }
 }

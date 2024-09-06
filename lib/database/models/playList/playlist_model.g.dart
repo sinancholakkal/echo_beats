@@ -8,7 +8,7 @@ part of 'playlist_model.dart';
 
 class PlayListSongModelAdapter extends TypeAdapter<PlayListSongModel> {
   @override
-  final int typeId = 0;
+  final int typeId = 1;
 
   @override
   PlayListSongModel read(BinaryReader reader) {
@@ -54,7 +54,7 @@ class PlayListSongModelAdapter extends TypeAdapter<PlayListSongModel> {
 
 class PlaylistAdapter extends TypeAdapter<Playlist> {
   @override
-  final int typeId = 1;
+  final int typeId = 2;
 
   @override
   Playlist read(BinaryReader reader) {
@@ -64,7 +64,7 @@ class PlaylistAdapter extends TypeAdapter<Playlist> {
     };
     return Playlist(
       name: fields[1] as String,
-      songs: (fields[2] as List).cast<PlayListSongModel>(),
+      songs: (fields[2] as List?)?.cast<PlayListSongModel>(),
       id: fields[0] as int?,
     );
   }

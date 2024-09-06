@@ -47,6 +47,9 @@ dependencies:
   audioplayers: ^6.1.0
   just_audio_background: ^0.0.1-beta.13
   hive_flutter: ^1.1.0
+  fluttertoast: ^8.2.8
+  flutter_slidable: ^3.1.1
+
 
 
 dev_dependencies:

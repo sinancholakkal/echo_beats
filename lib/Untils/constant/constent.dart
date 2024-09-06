@@ -12,24 +12,6 @@ Widget sizeBox({int h=0,int w=0}){
 class AudioPlayerService {
   static final AudioPlayer player = AudioPlayer();
 
-  // This is a getter that returns the _audioPlayer instance
-  // static AudioPlayer get player => _audioPlayer;
-
-  // static void play(String uri) {
-  //   _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(uri)));
-  //   _audioPlayer.play();
-  // }
-
-  // static void stop() {
-  //   _audioPlayer.stop();
-  // }
-  // static void skip(){
-  //   _audioPlayer.seekToNext();
-  // }
-
-  //  static void seekToPrevious(){
-  //   _audioPlayer.seekToPrevious();
-  // }
 }
 
 
