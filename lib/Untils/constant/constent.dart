@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -12,6 +14,22 @@ Widget sizeBox({int h=0,int w=0}){
 class AudioPlayerService {
   static final AudioPlayer player = AudioPlayer();
 
+}
+
+  void deleteSong(String filePath) {
+  final file = File(filePath);
+  print(file);
+  
+  try {
+    if (file.existsSync()) {
+      file.deleteSync();
+      print('File deleted successfully');
+    } else {
+      print('File not exist');
+    }
+  } catch (e) {
+    print('Error deleting file: $e');
+  }
 }
 
 

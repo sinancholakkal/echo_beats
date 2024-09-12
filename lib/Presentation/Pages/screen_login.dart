@@ -17,10 +17,12 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
   
   Future<void> handlePermission() async {
+    var statusStorage = await Permission.manageExternalStorage.status;
+
     var status = await Permission.audio.status;
-    if (status.isGranted) {
+    if (status.isGranted && statusStorage.isGranted) {
       Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-        return ScreenHomes();
+        return const ScreenHomes();
       }));
     } else if (status.isDenied) {
       // Redirect user to settings if permission is denied
@@ -28,21 +30,21 @@ class _ScreenLoginState extends State<ScreenLogin> {
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: Colors.white,
-          title: Text('Permission Required'),
-          content: Text('Please grant audio permission in settings to continue.'),
+          title: const Text('Permission Required'),
+          content: const Text('Please grant audio permission and external storage in settings to continue.'),
           actions: [
             TextButton(
               onPressed: () {
                 openAppSettings(); // Redirect to settings
               },
-              child: Text('Open Settings'),
+              child: const Text('Open Settings'),
             ),
            
           ],
         ),
       );
-    } else {
-      // Permission denied and not shown in settings
+    } else if(statusStorage.isDenied){
+      await Permission.manageExternalStorage.request();
       
     }
   }
@@ -61,7 +63,6 @@ class _ScreenLoginState extends State<ScreenLogin> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            // Enables scrolling
             child: Column(
               children: [
                 Container(
@@ -93,7 +94,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                                 fontSize: 70,
                                 fontWeight: FontWeight.w600,
                                 color:
-                                    Colors.white, // Assuming white is defined
+                                    Colors.white,
                               ),
                             ),
                           ],

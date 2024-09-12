@@ -22,6 +22,9 @@ class RecentlyPlayedModel {
   Uint8List imageUri;
   @HiveField(5)
   final DateTime timestamp;
+  
+  @HiveField(6)
+  String songPath;
 
 
   RecentlyPlayedModel({
@@ -30,7 +33,8 @@ class RecentlyPlayedModel {
     required this.artist,
     required this.uri,
     required this.imageUri,
-    required this.timestamp
+    required this.timestamp,
+    required this.songPath
   });
    Uint8List get imageBytes => imageUri;
 

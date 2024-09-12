@@ -23,7 +23,7 @@ class ScreenAccount extends StatelessWidget {
         decoration:
             BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Column(
             children: [
               sizeBox(h: 40),

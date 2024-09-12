@@ -23,13 +23,14 @@ class RecentlyPlayedModelAdapter extends TypeAdapter<RecentlyPlayedModel> {
       uri: fields[3] as String?,
       imageUri: fields[4] as Uint8List,
       timestamp: fields[5] as DateTime,
+      songPath: fields[6] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, RecentlyPlayedModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +42,9 @@ class RecentlyPlayedModelAdapter extends TypeAdapter<RecentlyPlayedModel> {
       ..writeByte(4)
       ..write(obj.imageUri)
       ..writeByte(5)
-      ..write(obj.timestamp);
+      ..write(obj.timestamp)
+      ..writeByte(6)
+      ..write(obj.songPath);
   }
 
   @override

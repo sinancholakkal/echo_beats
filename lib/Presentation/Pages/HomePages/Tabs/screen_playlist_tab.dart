@@ -9,6 +9,7 @@ import 'package:echo_beats_music/Untils/constant/constent.dart';
 
 class PlaylistTab extends StatelessWidget {
   PlaylistTab({super.key});
+  
 
   final TextEditingController _playlistTextController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -17,7 +18,7 @@ class PlaylistTab extends StatelessWidget {
   Widget build(BuildContext context) {
     gettingPlaylist();
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -112,7 +113,19 @@ class PlaylistTab extends StatelessWidget {
                                 //slidable------------------
                                 SlidableAction(
                                   onPressed: (context) {
-                                    showDelete(context: context, content: """Are you sure you want to delete the playlist '${value[index].name}'?""", title: "Delete Playlist", key: value[index].id!, playlistName: value[index].name);
+                                    showDelete(
+                                        context: context,
+                                        content:
+                                            """Are you sure you want to delete the playlist '${value[index].name}'?""",
+                                        title: "Delete Playlist",
+                                        //key: value[index].id!,
+                                        playlistName: '',
+                                        delete: () {
+                                            deletePlaylist(value[index].id!);
+                                            Get.back();
+                                            showAddedToast(msg:  "Playlist '${value[index].name}' deleted successfully");
+                                            
+                                        });
                                   },
                                   icon: Icons.remove_circle,
                                   label: "Remove",
@@ -181,6 +194,7 @@ class PlaylistTab extends StatelessWidget {
         context: context,
         builder: (_) {
           return AlertDialog(
+            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
             title: const Text("Create New Playlist"),
             content: Form(
               key: _formKey,

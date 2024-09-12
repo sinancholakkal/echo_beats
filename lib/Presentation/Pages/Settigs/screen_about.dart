@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
@@ -14,12 +13,12 @@ class ScreenAbout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "About",
           style: TextStyle(color: white),
         ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: white, size: 30),
+        iconTheme:const IconThemeData(color: white, size: 30),
         //backgroundColor: const Color.fromARGB(255, 179, 17, 155),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),

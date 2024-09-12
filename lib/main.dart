@@ -1,6 +1,7 @@
 
 import 'package:echo_beats_music/Presentation/Pages/screen_splash.dart';
 import 'package:echo_beats_music/Untils/Theme/them.dart';
+import 'package:echo_beats_music/database/functions/theme/db_function_theme.dart';
 import 'package:echo_beats_music/database/models/favourite/favourite_class_model.dart';
 import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
 import 'package:echo_beats_music/database/models/recentlyPlayed/recently_played_model.dart';
@@ -16,8 +17,10 @@ Future<void> main() async {
     androidNotificationChannelName: 'Audio playback',
     androidNotificationOngoing: true,
   );
-
+  
   await Hive.initFlutter();
+  await getTheme();
+
   if(!Hive.isAdapterRegistered(SongModelClassAdapter().typeId)){
     Hive.registerAdapter(SongModelClassAdapter());
   }
@@ -35,18 +38,27 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  //static ValueNotifier<ThemeMode> themeNotifier =ValueNotifier(ThemeMode.dark);
+
   @override
   Widget build(BuildContext context) {
-    return  GetMaterialApp( 
-      debugShowCheckedModeBanner: false,
-      theme: lightMode.copyWith(
-         textTheme: GoogleFonts.poppinsTextTheme(),
-         
-      ),
-      darkTheme: darkMode,
-      home: const ScreenSplash(),
-      initialRoute: 'splash',
-      
+    return  ValueListenableBuilder(
+      valueListenable: themeNoti,
+      builder: (BuildContext context, value, Widget? child) { 
+        return GetMaterialApp( 
+        themeMode:value=="dark" ?ThemeMode.dark : value =="light" ?ThemeMode.light: ThemeMode.dark,
+        debugShowCheckedModeBanner: false,
+        theme: lightMode.copyWith(
+           textTheme: GoogleFonts.poppinsTextTheme(),
+           
+        ),
+        darkTheme: darkMode,
+        home: const ScreenSplash(),
+        initialRoute: 'splash',
+        
+      );
+       },
+    
     );
   }
 }

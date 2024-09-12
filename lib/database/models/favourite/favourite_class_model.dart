@@ -21,8 +21,10 @@ class SongModelClass {
   @HiveField(4)
   Uint8List imageUri;
 
-  // @HiveField(5)
-  // bool isFavorite; 
+  @HiveField(5)
+  final String songPath;
+
+
 
   SongModelClass({
     required this.id,
@@ -30,7 +32,7 @@ class SongModelClass {
     required this.artist,
     required this.uri,
     required this.imageUri,
-    //this.isFavorite=false,
+    required this.songPath
   });
    Uint8List get imageBytes => imageUri;
 

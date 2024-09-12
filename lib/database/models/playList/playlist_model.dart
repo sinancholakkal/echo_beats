@@ -21,13 +21,16 @@ class PlayListSongModel {
   @HiveField(4)
   Uint8List imageUri;
 
+  @HiveField(5)
+  String songPath;
+
   PlayListSongModel({
     required this.id,
     required this.displayNameWOExt,
     required this.artist,
     required this.uri,
     required this.imageUri,
-    //this.isFavorite=false,
+    required this.songPath,
   });
    Uint8List get imageBytes => imageUri;
 

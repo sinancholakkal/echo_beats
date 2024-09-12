@@ -19,9 +19,9 @@ class ScreenAddPlaylist extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: white),
-        titleTextStyle: TextStyle(color: white, fontSize: 20),
-        title: Text("Select Playlist"),
+        iconTheme: const IconThemeData(color: white),
+        titleTextStyle: const TextStyle(color: white, fontSize: 20),
+        title: const Text("Select Playlist"),
       ),
       body: Container(
         width: double.infinity,
@@ -37,7 +37,7 @@ class ScreenAddPlaylist extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     "New Playlist",
                     style: TextStyle(color: white),
                   ),
@@ -46,7 +46,7 @@ class ScreenAddPlaylist extends StatelessWidget {
                         print(songModel);
                         showDialogForCreatePlaylist(context);
                       },
-                      icon: Icon(
+                      icon:const Icon(
                         Icons.add,
                         color: white,
                       ))
@@ -77,7 +77,7 @@ class ScreenAddPlaylist extends StatelessWidget {
                                 displayNameWOExt: songModel.displayNameWOExt,
                                 artist: songModel.album ?? "Unknown Artist",
                                 uri: songModel.uri,
-                                imageUri: imagebyte ?? Uint8List(0),
+                                imageUri: imagebyte ?? Uint8List(0), songPath: songModel.data,
                               );
 
                               if (value[index].songs.any((song) =>

@@ -37,12 +37,12 @@ class ScreenFavourate extends StatelessWidget {
           color: Theme.of(context).scaffoldBackgroundColor,
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           child: ValueListenableBuilder(
             valueListenable: favouriteClassModelList,
             builder: (BuildContext context, value, Widget? child) {
               if (value.isEmpty) {
-                return Center(child: Text("No favorite songs found"));
+                return const Center(child: Text("No favorite songs found"));
               } else {
                 return ListView.builder(
                   itemCount: value.length,
@@ -51,7 +51,7 @@ class ScreenFavourate extends StatelessWidget {
                       queryArtWidget: QueryArtworkWidget(
                           id: value[index].id,
                           type: ArtworkType.AUDIO,
-                          nullArtworkWidget: Icon(
+                          nullArtworkWidget:const Icon(
                             Icons.music_note,
                             size: 50,
                           )),
@@ -60,7 +60,6 @@ class ScreenFavourate extends StatelessWidget {
                       operation: () async {
                         print("---------------------------------------------");
                         print(favouriteClassModelList.value.length);
-                        // Start by stopping any existing playback
                          AudioPlayerService.player.stop();
 
                         // Create the proper AudioSource with MediaItem
@@ -78,7 +77,6 @@ class ScreenFavourate extends StatelessWidget {
                           ),
                         );
                         Get.to(() => ScreenPlaying(
-                             // audioPlayer: _audioPlayer,
                               idx: index,
                               songModelList: favouriteClassModelList.value,
                             ));
@@ -86,6 +84,7 @@ class ScreenFavourate extends StatelessWidget {
                         //Start playback
                         //await AudioPlayerService.player.play();
                       },
+                      //Favorite button for remove song from favorite list
                       IconButton: IconButton(
                         onPressed: () {
                           deleteFromFavorite(value[index].id);

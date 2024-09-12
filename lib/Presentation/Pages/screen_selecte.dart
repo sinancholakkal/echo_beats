@@ -28,8 +28,8 @@ class _ScreenSelecteState extends State<ScreenSelecte> {
       appBar: AppBar(
         //backgroundColor: Color.fromARGB(255, 179, 17, 155),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        iconTheme: IconThemeData(color: white),
-        title: Text(
+        iconTheme: const IconThemeData(color: white),
+        title: const Text(
           "Song Selected",
           style: TextStyle(color: white),
         ),
@@ -55,17 +55,17 @@ class _ScreenSelecteState extends State<ScreenSelecte> {
                         onPressed: () {
                           // Handle delete action
                         },
-                        icon: Icon(Icons.delete, color: white),
+                        icon: const Icon(Icons.delete, color: white),
                       ),
                       IconButton(
                         onPressed: () {
                           // Handle add playlist action
                         },
-                        icon: Icon(Icons.playlist_add, color: white),
+                        icon: const Icon(Icons.playlist_add, color: white),
                       ),
                     ],
                   ),
-                  title: Text(
+                  title: const Text(
                     "Select All",
                     style: TextStyle(
                       color: white,

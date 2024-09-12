@@ -13,7 +13,6 @@ class ScreenSettings extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        //backgroundColor: const Color.fromARGB(255, 179, 17, 155),
         iconTheme: const IconThemeData(color: white, size: 30),
         title: const Text(
           "Settings",
@@ -37,7 +36,7 @@ class ScreenSettings extends StatelessWidget {
                   title: "Theme",
                   subtitle: "Dark Mode",
                   onTap: () {
-                    Get.to(() => ScreenTheme(),
+                    Get.to(() => const ScreenTheme(),
                         transition: Transition.cupertino);
                   }),
               //About---------------------

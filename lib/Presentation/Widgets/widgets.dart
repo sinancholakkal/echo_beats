@@ -14,12 +14,16 @@ Widget searchField(
     IconData? iconData,
     IconButton? iconButton,
     required bool showCursor,
+    TextEditingController? txtControl,
     required void Function() onTap,
     required TextInputType type}) {
   return TextFormField(
-    keyboardType: type,
+    autofocus: false,
+    controller: txtControl,
+    //keyboardType: ,
+    style: const TextStyle(color: Colors.black),
     onTap: onTap,
-    showCursor: false,
+    showCursor: showCursor,
     decoration: InputDecoration(
       fillColor: color,
       filled: true,
@@ -97,7 +101,6 @@ Widget musicCard({
   IconButton? IconButton,
   PopupMenuButton? PopupMenuButton,
   required BuildContext context,
-  //required ImageProvider imageProvider,
   required QueryArtworkWidget queryArtWidget,
 }) {
   return Card(
@@ -159,13 +162,15 @@ void showDelete({
   required BuildContext context,
   required String title,
   required String content,
-  required int key,
-  required String playlistName
+   int? key,
+  required String playlistName,
+  required void Function() delete,
 }) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
         title: Text(title),
         content: Text(content),
         actions: [
@@ -178,11 +183,7 @@ void showDelete({
             style: ButtonStyle(
                 backgroundColor:
                     WidgetStateProperty.all(AppColors.appNameColor)),
-            onPressed: () {
-              deletePlaylist(key);
-              Get.back();
-              showAddedToast(msg:  "Playlist '$playlistName' deleted successfully");
-            },
+            onPressed: delete,
             child: const Text("Delete"),
           )
         ],

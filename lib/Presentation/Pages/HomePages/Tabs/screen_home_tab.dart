@@ -1,8 +1,7 @@
-import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_music_tab.dart';
+
 import 'package:echo_beats_music/Presentation/Pages/screen_favourate.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
 import 'package:echo_beats_music/Presentation/Pages/Settigs/settings.dart';
-import 'package:echo_beats_music/Presentation/Pages/screen_search.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_shuffle.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
@@ -14,13 +13,16 @@ import 'package:get/route_manager.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class HomeTab extends StatefulWidget {
+  const HomeTab({super.key});
+
   @override
   State<HomeTab> createState() => _HomeTabState();
 }
 
 class _HomeTabState extends State<HomeTab> {
+  TextEditingController searchController = TextEditingController();
   late List<ValueNotifier<bool>> playPauseList;
-  int _currenyPlayingIndex = -1;
+  String? filter;
 
   @override
   void initState() {
@@ -28,6 +30,11 @@ class _HomeTabState extends State<HomeTab> {
     // Initialize playPauseList with an empty list
     playPauseList = [];
     gettingRecentlyPlayedSong();
+    searchController.addListener((){
+      setState(() {
+        filter = searchController.text;
+      });
+    });
   }
 
   @override
@@ -36,7 +43,7 @@ class _HomeTabState extends State<HomeTab> {
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(10),
           child: Column(
             children: [
               Row(
@@ -83,12 +90,13 @@ class _HomeTabState extends State<HomeTab> {
               sizeBox(h: 30),
               // Search Field
               searchField(
+                txtControl: searchController,
                 onTap: () {
-                  Get.to(() => ScreenSearch(),
-                      transition: Transition.cupertino,
-                      duration: const Duration(seconds: 1));
+                  // Get.to(() => const ScreenSearch(),
+                  //     transition: Transition.cupertino,
+                  //     duration: const Duration(seconds: 1));
                 },
-                showCursor: false,
+                showCursor: true,
                 color: white,
                 hint: "Search",
                 iconData: Icons.search,
@@ -136,33 +144,62 @@ class _HomeTabState extends State<HomeTab> {
                 ],
               ),
               sizeBox(h: 16),
-              Align(
+              const Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                    "Last Session",
-                    style: TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold, color: white),
-                  ),
+                  "Last Session",
+                  style: TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold, color: white),
+                ),
               ),
               // Recently Played Songs
               sizeBox(h: 16),
               ValueListenableBuilder<List<RecentlyPlayedModel>>(
                 valueListenable: recentlyplayedNotifier,
                 builder: (BuildContext context, value, Widget? child) {
+                  final revers =value.reversed.toList();
                   // Update playPauseList if the length has changed
                   if (playPauseList.length != value.length) {
                     playPauseList = List.generate(
                         value.length, (index) => ValueNotifier<bool>(false));
                   }
-                  if (value.isEmpty ) {
-                    return Center(
+                  
+                  if (value.isEmpty) {
+                    return const Center(
                       child: Text("No Song played"),
                     );
                   } else {
-                    final revers = value.reversed.toList();
-                    return Column(
+                    //Chekking for searching
+                    List<RecentlyPlayedModel> filterList =[];
+                    if(filter!=null && filter!.isNotEmpty){
+                      filterList = revers
+                        .where((song) => song.displayNameWOExt
+                            .toLowerCase()
+                            .contains(filter!.toLowerCase()))
+                        .toList();
+                        
+                    }else{
+                      filterList =revers;
+                    }
+                    if(filterList.isEmpty){
+                      return const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image(
+                            width: 160,
+                            image: NetworkImage(
+                              "https://cdn.pixabay.com/photo/2014/04/03/09/57/detective-309445_1280.png",
+                            ),
+                          ),
+                          SizedBox(height: 20,),
+                          Text("No search results")
+                        ],
+                      );
+                    }else{
+                      return filterList.isEmpty ? const Center(child: CircularProgressIndicator(),) :
+                      Column(
                       children: List.generate(
-                        revers.length,
+                        filterList.length,
                         (index) {
                           return ValueListenableBuilder<bool>(
                             valueListenable: playPauseList[index],
@@ -170,7 +207,7 @@ class _HomeTabState extends State<HomeTab> {
                                 Widget? child) {
                               return musicCard(
                                 queryArtWidget: QueryArtworkWidget(
-                                  id: revers[index].id,
+                                  id: filterList[index].id,
                                   type: ArtworkType.AUDIO,
                                   nullArtworkWidget: const Icon(
                                     Icons.music_note,
@@ -178,27 +215,18 @@ class _HomeTabState extends State<HomeTab> {
                                     color: white,
                                   ),
                                 ),
-                                musicName: revers[index].displayNameWOExt,
-                                artistName: revers[index].artist,
-                                operation: () {},
-                                IconButton: IconButton(
-                                  onPressed: () {
-                                    if (_currenyPlayingIndex != -1 &&
-                                        _currenyPlayingIndex != index) {
-                                      playPauseList[_currenyPlayingIndex]
-                                          .value = false;
-                                    }
-                                    playPauseList[index].value = !isPlaying;
-                                    _currenyPlayingIndex = index;
-                                  },
-                                  icon: Icon(
-                                    isPlaying
-                                        ? Icons.pause_circle
-                                        : Icons.play_circle,
-                                    color: white,
-                                    size: 40,
-                                  ),
-                                ),
+                                musicName: filterList[index].displayNameWOExt,
+                                artistName: filterList[index].artist,
+                                operation: () {
+                                  //Navigating to playing screen
+                                  Get.to(
+                                      () => ScreenPlaying(
+                                            idx: index,
+                                            songModelList: filterList,
+                                          ),
+                                      transition: Transition.downToUp,
+                                      duration: const Duration(milliseconds: 500));
+                                },
                                 context: context,
                               );
                             },
@@ -206,6 +234,9 @@ class _HomeTabState extends State<HomeTab> {
                         },
                       ),
                     );
+                    }
+                   
+                     
                   }
                 },
               ),
@@ -215,4 +246,5 @@ class _HomeTabState extends State<HomeTab> {
       ),
     );
   }
+  
 }
