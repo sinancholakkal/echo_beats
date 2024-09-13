@@ -2,6 +2,7 @@
 import 'package:echo_beats_music/Presentation/Pages/screen_splash.dart';
 import 'package:echo_beats_music/Untils/Theme/them.dart';
 import 'package:echo_beats_music/database/functions/theme/db_function_theme.dart';
+import 'package:echo_beats_music/database/models/allsongs/all_song_model.dart';
 import 'package:echo_beats_music/database/models/favourite/favourite_class_model.dart';
 import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
 import 'package:echo_beats_music/database/models/recentlyPlayed/recently_played_model.dart';
@@ -32,6 +33,9 @@ Future<void> main() async {
   }
   if(!Hive.isAdapterRegistered(RecentlyPlayedModelAdapter().typeId)){
     Hive.registerAdapter(RecentlyPlayedModelAdapter());
+  }
+  if(!Hive.isAdapterRegistered(AllSongModelAdapter().typeId)){
+    Hive.registerAdapter(AllSongModelAdapter());
   }
   runApp(const MyApp());
 }

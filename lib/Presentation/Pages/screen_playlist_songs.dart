@@ -19,12 +19,18 @@ class ScreenPlaylistSongs extends StatelessWidget {
   String playlistName;
   int indexOfPlaylist;
   ScreenPlaylistSongs(
-      {super.key, required this.musics, required this.playlistName, required this.indexOfPlaylist});
+      {super.key,
+      required this.musics,
+      required this.playlistName,
+      required this.indexOfPlaylist});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions:  [
+          IconButton(onPressed: (){},icon: const Icon(Icons.add),)
+        ],
         iconTheme: const IconThemeData(color: white),
         title: Text(
           playlistName,
@@ -44,72 +50,89 @@ class ScreenPlaylistSongs extends StatelessWidget {
             valueListenable: playlistsNotifier,
             builder: (BuildContext context, value, Widget? child) {
               List<PlayListSongModel> songs = value[indexOfPlaylist].songs;
-              return ListView.builder(
-                itemCount: songs.length,
-                itemBuilder: (context, index) {
-                  return Slidable(
-                    endActionPane: ActionPane(
-                      motion: StretchMotion(),
-                      children: [
-                        //slidable------------------
-                        SlidableAction(
-                          onPressed: (context) {
-                            Uint8List? imagebyte;
-                            PlayListSongModel playListSongModel =
-                                PlayListSongModel(
-                              id: songs[index].id,
-                              displayNameWOExt: songs[index].displayNameWOExt,
-                              artist: songs[index].album ?? "Unknown Artist",
-                              uri: songs[index].uri,
-                              imageUri: imagebyte ?? Uint8List(0), songPath: songs[index].songPath,
-                            );
-                            removeSongFromPlaylist(
-                                playlistName, playListSongModel);
-                          },
-                          icon: Icons.remove_circle,
-                          label: "Remove",
-                        ),
-                      ],
-                    ),
-                    //Music card for displaying each songs
-                    child: musicCard(
-                      queryArtWidget: QueryArtworkWidget(
-                        id: songs[index].id,
-                        type: ArtworkType.AUDIO,
-                        nullArtworkWidget: const Icon(
-                          Icons.music_note,
-                          size: 50,
-                        ),
+              //Handling empty list
+              if (songs.isEmpty) {
+                return const Column(
+                  children: [
+                    Image(
+                      width: 160,
+                      image: NetworkImage(
+                        "https://cdn.pixabay.com/photo/2014/04/03/09/57/detective-309445_1280.png",
                       ),
-                      musicName: songs[index].displayNameWOExt,
-                      artistName: songs[index].artist,
-                      operation: () async {
-                        AudioPlayerService.player.stop();
-          
-                        // Create the proper AudioSource with MediaItem
-                        await AudioPlayerService.player.setAudioSource(
-                          AudioSource.uri(
-                            Uri.parse(musics[index].uri!),
-                            tag: MediaItem(
-                                id: songs[index].id.toString(),
-                                title: songs[index].displayNameWOExt,
-                                artist: songs[index].artist),
-                          ),
-                        );
-                        Get.to(() => ScreenPlaying(
-                              // audioPlayer: _audioPlayer,
-                              idx: index,
-                              songModelList: songs,
-                            ));
-          
-                        //Start playback
-                        //await AudioPlayerService.player.play();
-                      },
-                      context: context,
                     ),
-                  );
-                },
-              );
+                    SizedBox(height: 30,),
+                    Text("No songs")
+                  ],
+                );
+              } else {
+                return ListView.builder(
+                  itemCount: songs.length,
+                  itemBuilder: (context, index) {
+                    return Slidable(
+                      endActionPane: ActionPane(
+                        motion: StretchMotion(),
+                        children: [
+                          //slidable------------------
+                          SlidableAction(
+                            onPressed: (context) {
+                              Uint8List? imagebyte;
+                              PlayListSongModel playListSongModel =
+                                  PlayListSongModel(
+                                id: songs[index].id,
+                                displayNameWOExt: songs[index].displayNameWOExt,
+                                artist: songs[index].album ?? "Unknown Artist",
+                                uri: songs[index].uri,
+                                imageUri: imagebyte ?? Uint8List(0),
+                                songPath: songs[index].songPath,
+                              );
+                              removeSongFromPlaylist(
+                                  playlistName, playListSongModel);
+                            },
+                            icon: Icons.remove_circle,
+                            label: "Remove",
+                          ),
+                        ],
+                      ),
+                      //Music card for displaying each songs
+                      child: musicCard(
+                        queryArtWidget: QueryArtworkWidget(
+                          id: songs[index].id,
+                          type: ArtworkType.AUDIO,
+                          nullArtworkWidget: const Icon(
+                            Icons.music_note,
+                            size: 50,
+                          ),
+                        ),
+                        musicName: songs[index].displayNameWOExt,
+                        artistName: songs[index].artist,
+                        operation: () async {
+                          AudioPlayerService.player.stop();
+
+                          // Create the proper AudioSource with MediaItem
+                          await AudioPlayerService.player.setAudioSource(
+                            AudioSource.uri(
+                              Uri.parse(musics[index].uri!),
+                              tag: MediaItem(
+                                  id: songs[index].id.toString(),
+                                  title: songs[index].displayNameWOExt,
+                                  artist: songs[index].artist),
+                            ),
+                          );
+                          Get.to(() => ScreenPlaying(
+                                // audioPlayer: _audioPlayer,
+                                idx: index,
+                                songModelList: songs,
+                              ));
+
+                          //Start playback
+                          //await AudioPlayerService.player.play();
+                        },
+                        context: context,
+                      ),
+                    );
+                  },
+                );
+              }
             },
           ),
         ),

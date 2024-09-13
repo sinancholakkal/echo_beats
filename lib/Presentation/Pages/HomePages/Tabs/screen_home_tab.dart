@@ -1,4 +1,5 @@
 
+import 'package:echo_beats_music/Presentation/Pages/pppp.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_favourate.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
 import 'package:echo_beats_music/Presentation/Pages/Settigs/settings.dart';
@@ -51,7 +52,7 @@ class _HomeTabState extends State<HomeTab> {
                 children: [
                   IconButton(
                     onPressed: () {
-                      Get.to(() => const ScreenSettings(),
+                      Get.to(() => const Ppp(),
                           transition: Transition.cupertino);
                     },
                     icon: const Icon(
@@ -234,9 +235,7 @@ class _HomeTabState extends State<HomeTab> {
                         },
                       ),
                     );
-                    }
-                   
-                     
+                    } 
                   }
                 },
               ),

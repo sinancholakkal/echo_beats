@@ -11,9 +11,9 @@ Future<void> createPlayList({required String playlistName}) async {
   final key = await playlistBox.add(newPlaylist);
   newPlaylist.id = key;
   // playlistsNotifier.value = [...playlistsNotifier.value, newPlaylist];
+  await playlistBox.put(key, newPlaylist);
   playlistsNotifier.value.add(newPlaylist);
      playlistsNotifier.notifyListeners();
-       await playlistBox.put(key, newPlaylist);
   
 }
 
@@ -65,5 +65,20 @@ Future<void> removeSongFromPlaylist(String playlistName ,PlayListSongModel playl
 Future<void>deletePlaylist(int key)async{
   final openedBox = await Hive.openBox<Playlist>('playlistbox');
   openedBox.delete(key);
+  gettingPlaylist();
+}
+
+//update playlist name
+Future<void> updatePlaylistName(int id, newPlaylistName)async{
+  final openedBOX = await Hive.openBox<Playlist>("playlistbox");
+  Playlist? playlist = openedBOX.get(id);
+  if(playlist!=null){
+    var updatePlaylist = Playlist(name: newPlaylistName,songs: playlist.songs);
+    updatePlaylist.id =id;
+    await openedBOX.put(id, updatePlaylist);
+    
+  }else{
+    print("null--------------------------");
+  }
   gettingPlaylist();
 }

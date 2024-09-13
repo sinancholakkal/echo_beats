@@ -115,6 +115,7 @@ class ScreenAccount extends StatelessWidget {
         context: context,
         builder: (_) {
           return AlertDialog(
+            backgroundColor: Theme.of(context).colorScheme.secondary,
             title: const Text("Edit Profile"),
             content: Column(
               mainAxisSize: MainAxisSize.min,

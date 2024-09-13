@@ -3,6 +3,7 @@ import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_accoun
 import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_home_tab.dart';
 import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_music_tab.dart';
 import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_playlist_tab.dart';
+import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/database/functions/recentlyPlayed/db_function_recently_played.dart';
 import 'package:flutter/material.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';

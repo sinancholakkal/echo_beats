@@ -1,11 +1,11 @@
+
 import 'dart:typed_data';
 
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_flutter/adapters.dart';
+part 'all_song_model.g.dart';
 
-part 'playlist_model.g.dart';
-
-@HiveType(typeId: 1)
-class PlayListSongModel {
+@HiveType(typeId: 0)
+class AllSongModel {
   @HiveField(0)
   int id;
 
@@ -22,15 +22,17 @@ class PlayListSongModel {
   Uint8List imageUri;
 
   @HiveField(5)
-  String songPath;
+  final String songPath;
 
-  PlayListSongModel({
+
+
+  AllSongModel({
     required this.id,
     required this.displayNameWOExt,
     required this.artist,
     required this.uri,
     required this.imageUri,
-    required this.songPath,
+    required this.songPath
   });
    Uint8List get imageBytes => imageUri;
 
@@ -41,16 +43,4 @@ class PlayListSongModel {
   }
 }
 
-@HiveType(typeId: 2)
-class Playlist {
-  @HiveField(0)
-  int? id;
-  @HiveField(1)
-  String name;
 
-  @HiveField(2)
-   List<PlayListSongModel> songs;
-
- Playlist({required this.name, List<PlayListSongModel>? songs, this.id})
-      : this.songs = songs ?? [];  // I
-}

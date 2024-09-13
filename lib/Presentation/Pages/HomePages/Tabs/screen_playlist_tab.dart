@@ -1,6 +1,7 @@
 import 'package:echo_beats_music/Presentation/Pages/screen_playlist_songs.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/database/functions/playlist/db_function_playlist.dart';
+import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/route_manager.dart';
@@ -9,7 +10,6 @@ import 'package:echo_beats_music/Untils/constant/constent.dart';
 
 class PlaylistTab extends StatelessWidget {
   PlaylistTab({super.key});
-  
 
   final TextEditingController _playlistTextController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -100,7 +100,7 @@ class PlaylistTab extends StatelessWidget {
                   } else {
                     return ListView.builder(
                       shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: value.length,
                       itemBuilder: (context, index) {
                         //final playlist = playlists[index];
@@ -108,28 +108,44 @@ class PlaylistTab extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           child: Slidable(
                             endActionPane: ActionPane(
-                              motion: StretchMotion(),
+                              motion: const StretchMotion(),
                               children: [
                                 //slidable------------------
                                 SlidableAction(
                                   onPressed: (context) {
                                     showDelete(
-                                        context: context,
-                                        content:
-                                            """Are you sure you want to delete the playlist '${value[index].name}'?""",
-                                        title: "Delete Playlist",
-                                        //key: value[index].id!,
-                                        playlistName: '',
-                                        delete: () {
-                                            deletePlaylist(value[index].id!);
-                                            Get.back();
-                                            showAddedToast(msg:  "Playlist '${value[index].name}' deleted successfully");
-                                            
-                                        });
+                                      context: context,
+                                      content:
+                                          """Are you sure you want to delete the playlist '${value[index].name}'?""",
+                                      title: "Delete Playlist",
+                                      //key: value[index].id!,
+                                      playlistName: '',
+                                      delete: () {
+                                        deletePlaylist(value[index].id!);
+                                        Get.back();
+                                        showAddedToast(
+                                            msg:
+                                                "Playlist '${value[index].name}' deleted successfully");
+                                      },
+                                    );
                                   },
                                   icon: Icons.remove_circle,
                                   label: "Remove",
                                 ),
+                                //Edit button for edit name playlist--------------
+                                SlidableAction(
+                                  onPressed: (context) {
+                                    int? key = value[index].id;
+                                    print(key);
+                                    print(value[index].name);
+                                    _playlistTextController.text =
+                                        value[index].name;
+                                    showDialogForCreatePlaylist(context,
+                                        id: key);
+                                  },
+                                  icon: Icons.edit,
+                                  label: "Edit",
+                                )
                               ],
                             ),
                             child: ListTile(
@@ -189,12 +205,12 @@ class PlaylistTab extends StatelessWidget {
     );
   }
 
-  void showDialogForCreatePlaylist(context) {
+  void showDialogForCreatePlaylist(context, {int? id}) {
     showDialog(
         context: context,
         builder: (_) {
           return AlertDialog(
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            backgroundColor: Theme.of(context).colorScheme.secondary,
             title: const Text("Create New Playlist"),
             content: Form(
               key: _formKey,
@@ -203,6 +219,8 @@ class PlaylistTab extends StatelessWidget {
                 validator: (val) {
                   if (val == null || val.isEmpty) {
                     return "Enter Playlist Name";
+                  } else if (isPlaylistNameAlreadyExists(val)) {
+                    return "Playlist name already exists";
                   }
                   return null;
                 },
@@ -224,8 +242,13 @@ class PlaylistTab extends StatelessWidget {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     print("validate------------------");
-                    createPlayList(playlistName: _playlistTextController.text);
-                    Navigator.of(context).pop();
+                    if (id != null) {
+                      updatePlaylistName(id, _playlistTextController.text);
+                    } else {
+                      createPlayList(
+                          playlistName: _playlistTextController.text);
+                    }
+                    Get.back();
                     _playlistTextController.clear();
                   } else {
                     print("Not validated----------------");
@@ -239,5 +262,17 @@ class PlaylistTab extends StatelessWidget {
             ],
           );
         });
+  }
+
+
+//Checking playlist name already exists
+  bool isPlaylistNameAlreadyExists(name) {
+    final allPlaylist = playlistsNotifier.value;
+    for (var item in allPlaylist) {
+      if (item.name == name) {
+        return true;
+      }
+    }
+    return false;
   }
 }

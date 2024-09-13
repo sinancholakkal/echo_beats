@@ -26,7 +26,7 @@ ThemeData darkMode = ThemeData(
     secondary: Color.fromARGB(255, 57, 13, 38), // Secondary color,
     primary: Color.fromARGB(255, 57, 13, 38),
     onPrimary: Colors.white,
-    secondaryContainer: Color.fromARGB(167, 0, 0, 0),
+    secondaryContainer: Color.fromARGB(255, 39, 36, 36),
     
   ),
   scaffoldBackgroundColor: Colors.black,
