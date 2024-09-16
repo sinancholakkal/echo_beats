@@ -1,5 +1,5 @@
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
-import 'package:echo_beats_music/database/functions/theme/db_function_theme.dart';
+import 'package:echo_beats_music/database/functions_hive/theme/db_function_theme.dart';
 import 'package:echo_beats_music/main.dart';
 import 'package:flutter/material.dart';
 

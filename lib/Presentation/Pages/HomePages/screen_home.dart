@@ -4,7 +4,7 @@ import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_home_t
 import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_music_tab.dart';
 import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_playlist_tab.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
-import 'package:echo_beats_music/database/functions/recentlyPlayed/db_function_recently_played.dart';
+import 'package:echo_beats_music/database/functions_hive/recentlyPlayed/db_function_recently_played.dart';
 import 'package:flutter/material.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 
@@ -23,12 +23,13 @@ class _ScreenHomesState extends State<ScreenHomes> {
     HomeTab(),
     MusicTab(),
     PlaylistTab(),
-    ScreenAccount()
+    //ScreenAccount()
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       bottomNavigationBar: CurvedNavigationBar(
        // color: cardColor,
         color: Theme.of(context).primaryColor,
@@ -49,11 +50,11 @@ class _ScreenHomesState extends State<ScreenHomes> {
             size: 30,
             color: white,
           ),
-          Icon(
-            Icons.account_circle_rounded,
-            size: 30,
-            color: white,
-          )
+          // Icon(
+          //   Icons.account_circle_rounded,
+          //   size: 30,
+          //   color: white,
+          // )
         ],
         onTap: (index) {
           _currentIndex.value = index;

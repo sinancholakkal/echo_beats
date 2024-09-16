@@ -8,8 +8,10 @@ import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
-import 'package:echo_beats_music/database/functions/favourite/db_function.dart';
-import 'package:echo_beats_music/database/functions/recentlyPlayed/db_function_recently_played.dart';
+import 'package:echo_beats_music/database/functions_hive/all_songs/db_function.dart';
+import 'package:echo_beats_music/database/functions_hive/favourite/db_function.dart';
+import 'package:echo_beats_music/database/functions_hive/recentlyPlayed/db_function_recently_played.dart';
+import 'package:echo_beats_music/database/models/allsongs/all_song_model.dart';
 import 'package:echo_beats_music/database/models/favourite/favourite_class_model.dart';
 import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
 import 'package:echo_beats_music/database/models/recentlyPlayed/recently_played_model.dart';
@@ -82,6 +84,9 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
           currentIndex.value = index;
           chekk();
           addSongRecently();
+          // musicname.value = widget.songModelList[index].displayNameWOExt;
+          // musicname.notifyListeners();
+          // allSongNotifier.notifyListeners();
         }
       });
     } on Exception catch (e) {
@@ -167,6 +172,8 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                               widget.songModelList[currentIndex.value]
                                   is RecentlyPlayedModel ||
                               widget.songModelList[currentIndex.value]
+                                  is AllSongModel ||
+                              widget.songModelList[currentIndex.value]
                                   is PlayListSongModel) {
                             songPath = widget
                                 .songModelList[currentIndex.value].songPath;
@@ -195,10 +202,11 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                             PopupMenuItem(
                               child: const Text("Add to playlist"),
                               onTap: () {
-                                Get.to(() => ScreenAddPlaylist(
-                                      songModel: widget
-                                          .songModelList[currentIndex.value],
-                                    ));
+                                List<dynamic> song = [];
+                                song.add(widget.songModelList[currentIndex
+                                    .value]); //It is song list for adding playlist
+                                Get.to(
+                                    () => ScreenAddPlaylist(songModel: song));
                               },
                             )
                           ];
@@ -238,6 +246,8 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                         ValueListenableBuilder<int>(
                           valueListenable: currentIndex,
                           builder: (BuildContext context, val, Widget? child) {
+                            print(
+                                """${widget.songModelList[val].displayNameWOExt} =================================================""");
                             return MarqueeText(
                               speed: 30,
                               text: TextSpan(
@@ -466,11 +476,13 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
           artist: widget.songModelList[currentIndex.value].artist!,
           uri: widget.songModelList[currentIndex.value].uri,
           imageUri: imagebyte ?? Uint8List(0),
-          songPath: widget.songModelList[currentIndex.value]
-                      is RecentlyPlayedModel ||
-                  widget.songModelList[currentIndex.value] is PlayListSongModel
-              ? widget.songModelList[currentIndex.value].songPath
-              : widget.songModelList[currentIndex.value].data);
+          songPath:
+              widget.songModelList[currentIndex.value] is RecentlyPlayedModel ||
+                      widget.songModelList[currentIndex.value]
+                          is PlayListSongModel ||
+                      widget.songModelList[currentIndex.value] is AllSongModel
+                  ? widget.songModelList[currentIndex.value].songPath
+                  : widget.songModelList[currentIndex.value].data);
       //Adding song in favoraited
       addSongToFavourite(result);
       showAddedToast(msg: "Favorited");
@@ -494,15 +506,20 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
   void addSongRecently() {
     Uint8List? imagebyte;
     final result = RecentlyPlayedModel(
-      id: widget.songModelList[currentIndex.value].id,
-      displayNameWOExt:
-          widget.songModelList[currentIndex.value].displayNameWOExt,
-      artist: widget.songModelList[currentIndex.value].artist!,
-      uri: widget.songModelList[currentIndex.value].uri,
-      imageUri: imagebyte ?? Uint8List(0),
-      timestamp: DateTime.now(),
-      songPath: widget.songModelList[currentIndex.value].data,
-    );
+        id: widget.songModelList[currentIndex.value].id,
+        displayNameWOExt:
+            widget.songModelList[currentIndex.value].displayNameWOExt,
+        artist: widget.songModelList[currentIndex.value].artist ?? "unknown",
+        uri: widget.songModelList[currentIndex.value].uri,
+        imageUri: imagebyte ?? Uint8List(0),
+        timestamp: DateTime.now(),
+        //songPath: widget.songModelList[currentIndex.value] is SongModel ? widget.songModelList[currentIndex.value].data : widget.songModelList[currentIndex.value].songPath,
+        songPath: widget.songModelList[currentIndex.value]
+                    is RecentlyPlayedModel ||
+                widget.songModelList[currentIndex.value] is PlayListSongModel ||
+                widget.songModelList[currentIndex.value] is AllSongModel
+            ? widget.songModelList[currentIndex.value].songPath
+            : widget.songModelList[currentIndex.value].data);
     addRecentlyPlayed(result);
   }
 }

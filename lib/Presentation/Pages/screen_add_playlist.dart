@@ -1,15 +1,18 @@
 import 'dart:typed_data';
 
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
-import 'package:echo_beats_music/database/functions/playlist/db_function_playlist.dart';
+import 'package:echo_beats_music/database/functions_hive/playlist/db_function_playlist.dart';
 import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/route_manager.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 
 class ScreenAddPlaylist extends StatelessWidget {
-  final dynamic songModel;
+  //final dynamic songModel;
+  List<dynamic> songModel;
+
   ScreenAddPlaylist({super.key, required this.songModel});
 
   final TextEditingController _playlistTextController = TextEditingController();
@@ -71,13 +74,15 @@ class ScreenAddPlaylist extends StatelessWidget {
                             ),
                             onTap: () {
                               Uint8List? imagebyte;
-                              PlayListSongModel playListSongModel =
+                              for(var song in songModel){
+                                PlayListSongModel playListSongModel =
                                   PlayListSongModel(
-                                id: songModel.id,
-                                displayNameWOExt: songModel.displayNameWOExt,
-                                artist: songModel.album ?? "Unknown Artist",
-                                uri: songModel.uri,
-                                imageUri: imagebyte ?? Uint8List(0), songPath: songModel.data,
+                                id: song.id,
+                                displayNameWOExt: song.displayNameWOExt,
+                                artist: song.album ?? "Unknown Artist",
+                                uri: song.uri,
+                                imageUri: imagebyte ?? Uint8List(0), 
+                                songPath: song is SongModel ? song.data : song.songPath,
                               );
 
                               if (value[index].songs.any((song) =>
@@ -91,7 +96,7 @@ class ScreenAddPlaylist extends StatelessWidget {
                                 );
                               } else {
                                 Fluttertoast.showToast(
-                                  msg: '''1 songs added to "${value[index].name}"''',
+                                  msg: '''song added to "${value[index].name}"''',
                                   backgroundColor: toastbgColor
                                 );
                                 print("Song not there");
@@ -101,6 +106,8 @@ class ScreenAddPlaylist extends StatelessWidget {
 
                               print("Music added");
                               Get.back();
+                              }
+                              
                             },
                           ),
                         );

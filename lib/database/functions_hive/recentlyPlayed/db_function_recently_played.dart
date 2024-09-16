@@ -10,6 +10,7 @@ Future<void> addRecentlyPlayed(RecentlyPlayedModel song)async{
       bool isAlready = recentlyplayedNotifier.value.any((item)=>item.id==song.id);
     if(isAlready==false){
       recentlyplayedNotifier.value.add(song);
+      print("Song Added All song notfier");
     }else{
       recentlyplayedNotifier.value.removeWhere((item)=>song.id==item.id);
       recentlyplayedNotifier.value.add(song);
@@ -17,6 +18,7 @@ Future<void> addRecentlyPlayed(RecentlyPlayedModel song)async{
 
         bool isAlreadyDB = openedBox.values.any((item)=>item.id==song.id);
     if(isAlreadyDB==false){
+      print("SongAddeddd------------------------------------------");
       openedBox.put(song.id, song);
     }else{
       openedBox.delete(song.id);

@@ -4,10 +4,10 @@ import 'dart:typed_data';
 import 'package:hive_flutter/adapters.dart';
 part 'all_song_model.g.dart';
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 4)
 class AllSongModel {
   @HiveField(0)
-  int id;
+  int? id;
 
   @HiveField(1)
   final String displayNameWOExt;
@@ -27,7 +27,7 @@ class AllSongModel {
 
 
   AllSongModel({
-    required this.id,
+     this.id,
     required this.displayNameWOExt,
     required this.artist,
     required this.uri,

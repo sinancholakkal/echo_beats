@@ -1,4 +1,4 @@
-import 'package:echo_beats_music/database/functions/all_songs/db_function.dart';
+import 'package:echo_beats_music/database/functions_hive/all_songs/db_function.dart';
 import 'package:flutter/material.dart';
 
 class Ppp extends StatelessWidget {
@@ -6,7 +6,7 @@ class Ppp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    getAllSongs();
+  
     return Scaffold(
       body: SafeArea(
         child: ValueListenableBuilder(
@@ -15,7 +15,7 @@ class Ppp extends StatelessWidget {
             return ListView.builder(
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text("100"),
+                title: Text(value[index].id.toString()),
               );
             },
             itemCount: value.length,

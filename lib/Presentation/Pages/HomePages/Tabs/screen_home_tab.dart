@@ -1,17 +1,24 @@
+import 'dart:typed_data';
 
 import 'package:echo_beats_music/Presentation/Pages/pppp.dart';
+import 'package:echo_beats_music/Presentation/Pages/screen_add_playlist.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_favourate.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
-import 'package:echo_beats_music/Presentation/Pages/Settigs/settings.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_shuffle.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
-import 'package:echo_beats_music/database/functions/recentlyPlayed/db_function_recently_played.dart';
+import 'package:echo_beats_music/database/functions_hive/all_songs/db_function.dart';
+import 'package:echo_beats_music/database/functions_hive/favourite/db_function.dart';
+import 'package:echo_beats_music/database/functions_hive/recentlyPlayed/db_function_recently_played.dart';
+import 'package:echo_beats_music/database/models/allsongs/all_song_model.dart';
+import 'package:echo_beats_music/database/models/favourite/favourite_class_model.dart';
+import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
 import 'package:echo_beats_music/database/models/recentlyPlayed/recently_played_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -22,16 +29,43 @@ class HomeTab extends StatefulWidget {
 
 class _HomeTabState extends State<HomeTab> {
   TextEditingController searchController = TextEditingController();
-  late List<ValueNotifier<bool>> playPauseList;
+  final _audioQuery = OnAudioQuery();
+  ValueNotifier<List<SongModel>> allSong = ValueNotifier([]);
+  ValueNotifier<String> songHead = ValueNotifier("All Songs");
+  ValueNotifier<String> username =ValueNotifier<String>('');
+  final TextEditingController updatingController = TextEditingController();
+  List<SongModel> songs = [];
   String? filter;
+
+  // Function to fetch songs
+  void fetchSongs() async {
+    songs = await _audioQuery.querySongs(
+      sortType: null,
+      orderType: OrderType.ASC_OR_SMALLER,
+      uriType: UriType.EXTERNAL,
+      ignoreCase: true,
+    );
+    addToAllsong(songs);
+  }
 
   @override
   void initState() {
     super.initState();
-    // Initialize playPauseList with an empty list
-    playPauseList = [];
+    getUsername();
+    fetchSongs();
     gettingRecentlyPlayedSong();
-    searchController.addListener((){
+    songHead.value =
+        recentlyplayedNotifier.value.isEmpty ? "All Songs" : "Recently played";
+
+    // Add a listener to update songHead whenever recentlyplayedNotifier changes
+    recentlyplayedNotifier.addListener(() {
+      if (recentlyplayedNotifier.value.isEmpty) {
+        songHead.value = "All Songs";
+      } else {
+        songHead.value = "Recently played";
+      }
+    });
+    searchController.addListener(() {
       setState(() {
         filter = searchController.text;
       });
@@ -47,6 +81,7 @@ class _HomeTabState extends State<HomeTab> {
           padding: const EdgeInsets.all(10),
           child: Column(
             children: [
+              // Settings Button
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -64,39 +99,56 @@ class _HomeTabState extends State<HomeTab> {
                 ],
               ),
               sizeBox(h: 30),
+              // Greeting Text
               Align(
                 alignment: Alignment.topLeft,
-                child: RichText(
-                  text: const TextSpan(
-                    children: [
-                      TextSpan(
-                        text: "Hi There,\n",
-                        style: TextStyle(
-                            fontSize: 30,
-                            color: AppColors.appNameColor,
-                            fontWeight: FontWeight.bold),
+                child: ValueListenableBuilder(
+                  valueListenable: username,
+                  builder: (BuildContext context, value, Widget? child) {  
+                    value = value.isEmpty ? "Noob" : value;
+                    return InkWell(
+                      onDoubleTap: (){
+                        showDialog(context: context, builder: (BuildContext context){
+                          return alertWithtext(ok: (){
+                            updateName();
+                            Get.back();
+                          }, content: TextFormField(
+                            
+                            controller:updatingController,
+                          ), context: context);
+                        });
+                      },
+                      child: RichText(
+                      text:  TextSpan(
+                        children: [
+                          const TextSpan(
+                            text: "Hi There,\n",
+                            style: TextStyle(
+                                fontSize: 30,
+                                color: AppColors.appNameColor,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(
+                            text: value,
+                            style: const TextStyle(
+                              height: 1.5,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        ],
                       ),
-                      TextSpan(
-                        text: "Sinan",
-                        style: TextStyle(
-                          height: 1.5,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    ],
-                  ),
+                                        ),
+                    );
+                  },
+                  
                 ),
               ),
               sizeBox(h: 30),
               // Search Field
               searchField(
                 txtControl: searchController,
-                onTap: () {
-                  // Get.to(() => const ScreenSearch(),
-                  //     transition: Transition.cupertino,
-                  //     duration: const Duration(seconds: 1));
-                },
+                onTap: () {},
                 showCursor: true,
                 color: white,
                 hint: "Search",
@@ -145,12 +197,20 @@ class _HomeTabState extends State<HomeTab> {
                 ],
               ),
               sizeBox(h: 16),
-              const Align(
+              // Song Head Text
+              Align(
                 alignment: Alignment.topLeft,
-                child: Text(
-                  "Last Session",
-                  style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold, color: white),
+                child: ValueListenableBuilder(
+                  valueListenable: songHead,
+                  builder: (BuildContext context, value, Widget? child) {
+                    return Text(
+                      value,
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: white),
+                    );
+                  },
                 ),
               ),
               // Recently Played Songs
@@ -158,31 +218,90 @@ class _HomeTabState extends State<HomeTab> {
               ValueListenableBuilder<List<RecentlyPlayedModel>>(
                 valueListenable: recentlyplayedNotifier,
                 builder: (BuildContext context, value, Widget? child) {
-                  final revers =value.reversed.toList();
-                  // Update playPauseList if the length has changed
-                  if (playPauseList.length != value.length) {
-                    playPauseList = List.generate(
-                        value.length, (index) => ValueNotifier<bool>(false));
-                  }
-                  
-                  if (value.isEmpty) {
-                    return const Center(
-                      child: Text("No Song played"),
-                    );
-                  } else {
-                    //Chekking for searching
-                    List<RecentlyPlayedModel> filterList =[];
-                    if(filter!=null && filter!.isNotEmpty){
-                      filterList = revers
-                        .where((song) => song.displayNameWOExt
-                            .toLowerCase()
-                            .contains(filter!.toLowerCase()))
-                        .toList();
-                        
-                    }else{
-                      filterList =revers;
+                  final revers = value.reversed.toList();
+
+                  // Check if there are recently played songs
+                  if (revers.isEmpty) {
+                    if (songs.isEmpty) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else {
+                      // Filter All Songs based on search input
+                      List<dynamic> filterListAll =
+                          filter != null && filter!.isNotEmpty
+                              ? songs
+                                  .where((song) => song.displayNameWOExt
+                                      .toLowerCase()
+                                      .contains(filter!.toLowerCase()))
+                                  .toList()
+                              : songs;
+
+                      // Handle empty search results
+                      if (filterListAll.isEmpty) {
+                        return const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image(
+                              width: 160,
+                              image: NetworkImage(
+                                "https://cdn.pixabay.com/photo/2014/04/03/09/57/detective-309445_1280.png",
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            Text("No search results"),
+                          ],
+                        );
+                      }
+
+                      // Display All Songs
+                      return Column(
+                        children: List.generate(
+                          filterListAll.length,
+                          (index) {
+                            return musicCard(
+                              queryArtWidget: QueryArtworkWidget(
+                                id: filterListAll[index].id,
+                                type: ArtworkType.AUDIO,
+                                nullArtworkWidget: const Icon(
+                                  Icons.music_note,
+                                  size: 30,
+                                  color: white,
+                                ),
+                              ),
+                              musicName: filterListAll[index].title,
+                              artistName: filterListAll[index].artist ??
+                                  "Unknown Artist",
+                              operation: () {
+                                // Navigating to playing screen
+                                Get.to(
+                                  () => ScreenPlaying(
+                                    idx: index,
+                                    songModelList: filterListAll,
+                                  ),
+                                  transition: Transition.downToUp,
+                                  duration: const Duration(milliseconds: 500),
+                                );
+                              },
+                              context: context,
+                            );
+                          },
+                        ),
+                      );
                     }
-                    if(filterList.isEmpty){
+                  } else {
+                    // Filter Recently Played Songs based on search input
+                    List<RecentlyPlayedModel> filterList =
+                        filter != null && filter!.isNotEmpty
+                            ? revers
+                                .where((song) => song.displayNameWOExt
+                                    .toLowerCase()
+                                    .contains(filter!.toLowerCase()))
+                                .toList()
+                            : revers;
+
+                    // Handle empty search results
+                    if (filterList.isEmpty) {
                       return const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -192,50 +311,66 @@ class _HomeTabState extends State<HomeTab> {
                               "https://cdn.pixabay.com/photo/2014/04/03/09/57/detective-309445_1280.png",
                             ),
                           ),
-                          SizedBox(height: 20,),
-                          Text("No search results")
+                          SizedBox(height: 20),
+                          Text("No search results"),
                         ],
                       );
-                    }else{
-                      return filterList.isEmpty ? const Center(child: CircularProgressIndicator(),) :
-                      Column(
+                    }
+
+                    // Display Recently Played Songs
+                    return Column(
                       children: List.generate(
                         filterList.length,
                         (index) {
-                          return ValueListenableBuilder<bool>(
-                            valueListenable: playPauseList[index],
-                            builder: (BuildContext context, bool isPlaying,
-                                Widget? child) {
-                              return musicCard(
-                                queryArtWidget: QueryArtworkWidget(
-                                  id: filterList[index].id,
-                                  type: ArtworkType.AUDIO,
-                                  nullArtworkWidget: const Icon(
-                                    Icons.music_note,
-                                    size: 30,
-                                    color: white,
-                                  ),
+                          return musicCard(
+                            queryArtWidget: QueryArtworkWidget(
+                              id: filterList[index].id,
+                              type: ArtworkType.AUDIO,
+                              nullArtworkWidget: const Icon(
+                                Icons.music_note,
+                                size: 30,
+                                color: white,
+                              ),
+                            ),
+                            musicName: filterList[index].displayNameWOExt,
+                            artistName: filterList[index].artist,
+                            PopupMenuButton:
+                                PopupMenuButton(itemBuilder: (context) {
+                              return [
+                                //It is for add song into playlist
+                                PopupMenuItem(
+                                  child: Text("Add to playlist"),
+                                  onTap: () {
+                                    List<dynamic> songs = [];
+                                    songs.add(filterList[index]);
+                                    Get.to(() =>
+                                        ScreenAddPlaylist(songModel: songs));
+                                  },
                                 ),
-                                musicName: filterList[index].displayNameWOExt,
-                                artistName: filterList[index].artist,
-                                operation: () {
-                                  //Navigating to playing screen
-                                  Get.to(
-                                      () => ScreenPlaying(
-                                            idx: index,
-                                            songModelList: filterList,
-                                          ),
-                                      transition: Transition.downToUp,
-                                      duration: const Duration(milliseconds: 500));
-                                },
-                                context: context,
+                                PopupMenuItem(
+                                  child: Text("Add to favorite"),
+                                  onTap: (){
+                                    songAdtoFavorite(filterList[index]);
+                                  },
+                                )
+                              ];
+                            }),
+                            operation: () {
+                              // Navigating to playing screen
+                              Get.to(
+                                () => ScreenPlaying(
+                                  idx: index,
+                                  songModelList: filterList,
+                                ),
+                                transition: Transition.downToUp,
+                                duration: const Duration(milliseconds: 500),
                               );
                             },
+                            context: context,
                           );
                         },
                       ),
                     );
-                    } 
                   }
                 },
               ),
@@ -245,5 +380,53 @@ class _HomeTabState extends State<HomeTab> {
       ),
     );
   }
+
+  void songAdtoFavorite(var song) async {
+    Uint8List? imagebyte;
+    if(!isAlreadyFav(song)){
+      if (await _audioQuery.queryArtwork(song.id, ArtworkType.AUDIO) != null) {
+      imagebyte = await _audioQuery.queryArtwork(song.id, ArtworkType.AUDIO);
+    }
+    final result = SongModelClass(
+        id: song.id,
+        displayNameWOExt: song.displayNameWOExt,
+        artist: song.artist ?? "unknown",
+        uri: song.uri,
+        imageUri: imagebyte ?? Uint8List(0),
+        songPath: song is RecentlyPlayedModel ||
+                song is PlayListSongModel ||
+                song is AllSongModel
+            ? song.songPath
+            : song.data);
+    //Adding song in favoraited
+    addSongToFavourite(result);
+    showAddedToast(msg: "Favorited");
+    }else{
+      showAddedToast(msg: "This song already exists in the favorite");
+    }
+  }
+
+  bool isAlreadyFav(var song){
+    return favouriteClassModelList.value.any((item){
+      return item.id == song.id;
+    });
+  }
+  //getting name from shared preference
+  Future<void> getUsername()async{
+    SharedPreferences prfrs = await SharedPreferences.getInstance();
+    username.value = prfrs.getString("username")!;
+    updatingController.text =username.value;
+    username.notifyListeners();
+  }
+
+  //updating name
+  Future<void> updateName()async{
+    SharedPreferences prfs = await  SharedPreferences.getInstance();
+    prfs.setString('username', updatingController.text);
+    username.value =updatingController.text;
+    showAddedToast(msg: "Name updated");
+    
+  }
+
   
 }

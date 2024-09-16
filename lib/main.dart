@@ -1,7 +1,7 @@
 
 import 'package:echo_beats_music/Presentation/Pages/screen_splash.dart';
 import 'package:echo_beats_music/Untils/Theme/them.dart';
-import 'package:echo_beats_music/database/functions/theme/db_function_theme.dart';
+import 'package:echo_beats_music/database/functions_hive/theme/db_function_theme.dart';
 import 'package:echo_beats_music/database/models/allsongs/all_song_model.dart';
 import 'package:echo_beats_music/database/models/favourite/favourite_class_model.dart';
 import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
@@ -12,6 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
+const KEY_VALUE = "userLongedIn";
 Future<void> main() async {
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',

@@ -1,6 +1,6 @@
 import 'package:echo_beats_music/Presentation/Pages/screen_playlist_songs.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
-import 'package:echo_beats_music/database/functions/playlist/db_function_playlist.dart';
+import 'package:echo_beats_music/database/functions_hive/playlist/db_function_playlist.dart';
 import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -244,12 +244,14 @@ class PlaylistTab extends StatelessWidget {
                     print("validate------------------");
                     if (id != null) {
                       updatePlaylistName(id, _playlistTextController.text);
+                      _playlistTextController.clear();
                     } else {
                       createPlayList(
                           playlistName: _playlistTextController.text);
+                          _playlistTextController.clear();
                     }
                     Get.back();
-                    _playlistTextController.clear();
+                    
                   } else {
                     print("Not validated----------------");
                   }

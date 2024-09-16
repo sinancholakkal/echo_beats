@@ -1,9 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
-import 'package:echo_beats_music/database/functions/all_songs/db_function.dart';
-import 'package:echo_beats_music/database/functions/playlist/db_function_playlist.dart';
-import 'package:echo_beats_music/database/models/allsongs/all_song_model.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/route_manager.dart';
@@ -96,6 +93,8 @@ Widget homeCard({
   );
 }
 
+
+ValueNotifier<String> musicname =ValueNotifier('');
 //music card--------
 Widget musicCard({
   //AssetImage? image,
@@ -203,62 +202,33 @@ void showDelete({
 final showAddedToast = ({required String msg}) {
   Fluttertoast.showToast(
     msg: msg,
-    backgroundColor: const Color.fromARGB(174, 255, 255, 255),
+    backgroundColor: Colors.grey[500],
   );
 };
 
-//fetching song
-// void fetchSongs() async {
-//   final _audioQuery = OnAudioQuery();
-//   List<SongModel> musics = await _audioQuery.querySongs(
-//     sortType: null,
-//     orderType: OrderType.ASC_OR_SMALLER,
-//     uriType: UriType.EXTERNAL,
-//     ignoreCase: true,
-//   );
-//   List<AllSongModel> songs = [];
-//   for (int i = 0; i < musics.length; i++) {
-//      Uint8List? imagebyte;
-//     final result = AllSongModel(
-//       id: musics[i].id,
-//       displayNameWOExt: musics[i].displayName,
-//       artist: musics[i].artist ?? "unknown",
-//       uri: musics[i].uri,
-//       imageUri: imagebyte ?? Uint8List(0),
-//       songPath: musics[i].data,
-//     );
-//     //print(musics[i].displayName);
-//     addToAllsong(result);
-//   }
-// }
+Widget alertWithtext({required void Function() ok, required Widget content,required BuildContext context}){
+  return AlertDialog(
+    backgroundColor: Theme.of(context).colorScheme.secondary,
+    title: const Text("Name"),
+    content: content,
+    actions: [
+      TextButton(
+              onPressed: () {
+                Get.back();
+              },
+              child: const Text(
+                "Cancel",
+                style: TextStyle(color: white),
+              ),),
+              ElevatedButton(
+            style: ButtonStyle(
+                backgroundColor:
+                    WidgetStateProperty.all(AppColors.appNameColor)),
+            onPressed: ok,
+            child: const Text("Ok"),
+          )
+    ],
+  );
+}
 
-  //   Future<void> favSongAddOrDelete() async {
-  //   if (_isFavorate.value == false) {
-  //     Uint8List? imagebyte;
-  //     if (await _audioQuery.queryArtwork(
-  //             widget.songModelList[currentIndex.value].id, ArtworkType.AUDIO) !=
-  //         null) {
-  //       imagebyte = await _audioQuery.queryArtwork(
-  //           widget.songModelList[currentIndex.value].id, ArtworkType.AUDIO);
-  //     }
-  //     final result = SongModelClass(
-  //         id: widget.songModelList[currentIndex.value].id,
-  //         displayNameWOExt:
-  //             widget.songModelList[currentIndex.value].displayNameWOExt,
-  //         artist: widget.songModelList[currentIndex.value].artist!,
-  //         uri: widget.songModelList[currentIndex.value].uri,
-  //         imageUri: imagebyte ?? Uint8List(0),
-  //         songPath: widget.songModelList[currentIndex.value]
-  //                     is RecentlyPlayedModel ||
-  //                 widget.songModelList[currentIndex.value] is PlayListSongModel
-  //             ? widget.songModelList[currentIndex.value].songPath
-  //             : widget.songModelList[currentIndex.value].data);
-  //     //Adding song in favoraited
-  //     addSongToFavourite(result);
-  //     showAddedToast(msg: "Favorited");
-  //   } else {
-  //     //Delete song in favoraite
-  //     showAddedToast(msg: "Unfavorited");
-  //     removeFromfav.add(widget.songModelList[currentIndex.value].id);
-  //   }
-  // }
+

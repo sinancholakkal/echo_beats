@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:echo_beats_music/Presentation/Pages/screen_add_playlist.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_selecte.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
@@ -195,7 +196,7 @@ class _MusicTabState extends State<MusicTab> {
                             } else {
                               filterList = item.data!;
                             }
-                            
+
                             allSong.addAll(filterList);
                             if (filterList.isNotEmpty) {
                               return ValueListenableBuilder(
@@ -241,11 +242,23 @@ class _MusicTabState extends State<MusicTab> {
                                           PopupMenuButton: PopupMenuButton(
                                             itemBuilder: (context) {
                                               return [
-                                                const PopupMenuItem(
-                                                    child: Text("Delete")),
+                                                PopupMenuItem(
+                                                  child: const Text(
+                                                      "Add to playlist"),
+                                                  onTap: () {
+                                                    List<dynamic> songs = [];
+                                                    songs
+                                                        .add(filterList[index]);
+                                                    Get.to(() =>
+                                                        ScreenAddPlaylist(
+                                                            songModel: songs));
+                                                  },
+                                                ),
                                                 const PopupMenuItem(
                                                     child: Text(
                                                         "Add to favorite")),
+                                                const PopupMenuItem(
+                                                    child: Text("Delete"))
                                               ];
                                             },
                                             iconColor: white,
@@ -388,7 +401,7 @@ class _MusicTabState extends State<MusicTab> {
             "Sort",
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
-      
+
           ListTile(
             title: Text(
               "By song name",
@@ -399,7 +412,7 @@ class _MusicTabState extends State<MusicTab> {
             ),
             onTap: () {
               _currentSortType.value = SongSortType.DISPLAY_NAME;
-      
+
               Navigator.pop(context);
             },
           ),
@@ -413,7 +426,7 @@ class _MusicTabState extends State<MusicTab> {
             ),
             onTap: () {
               _currentSortType.value = SongSortType.ARTIST;
-      
+
               Navigator.pop(context);
             },
           ),
@@ -427,7 +440,7 @@ class _MusicTabState extends State<MusicTab> {
             ),
             onTap: () {
               _currentSortType.value = SongSortType.ALBUM;
-      
+
               Navigator.pop(context);
             },
           ),
@@ -443,7 +456,7 @@ class _MusicTabState extends State<MusicTab> {
             onTap: () {
               _currentSortType.value = SongSortType.DATE_ADDED;
               _currentOrderType.value = OrderType.DESC_OR_GREATER;
-      
+
               Navigator.pop(context);
             },
           ),
@@ -459,11 +472,11 @@ class _MusicTabState extends State<MusicTab> {
             onTap: () {
               _currentSortType.value = SongSortType.DATE_ADDED;
               _currentOrderType.value = OrderType.ASC_OR_SMALLER;
-      
+
               Navigator.pop(context);
             },
           )
-      
+
           // Add more sorting options here
         ],
       ),

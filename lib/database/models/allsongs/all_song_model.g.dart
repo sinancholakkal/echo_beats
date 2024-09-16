@@ -8,7 +8,7 @@ part of 'all_song_model.dart';
 
 class AllSongModelAdapter extends TypeAdapter<AllSongModel> {
   @override
-  final int typeId = 0;
+  final int typeId = 4;
 
   @override
   AllSongModel read(BinaryReader reader) {
@@ -17,7 +17,7 @@ class AllSongModelAdapter extends TypeAdapter<AllSongModel> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return AllSongModel(
-      id: fields[0] as int,
+      id: fields[0] as int?,
       displayNameWOExt: fields[1] as String,
       artist: fields[2] as String,
       uri: fields[3] as String?,
