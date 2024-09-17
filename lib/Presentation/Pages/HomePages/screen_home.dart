@@ -28,6 +28,7 @@ class _ScreenHomesState extends State<ScreenHomes> {
 
   @override
   Widget build(BuildContext context) {
+        filterList.notifyListeners();
     return Scaffold(
       
       bottomNavigationBar: CurvedNavigationBar(

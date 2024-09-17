@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
+import 'package:echo_beats_music/Presentation/Pages/screen_selecte.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
@@ -28,8 +29,17 @@ class ScreenPlaylistSongs extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions:  [
-          IconButton(onPressed: (){},icon: const Icon(Icons.add),)
+        actions: [
+          IconButton(
+            onPressed: () {
+              Get.to(
+                () => ScreenSelecte(),
+                transition: Transition.cupertino,
+                duration: const Duration(milliseconds: 500)
+              );
+            },
+            icon: const Icon(Icons.add),
+          )
         ],
         iconTheme: const IconThemeData(color: white),
         title: Text(
@@ -60,7 +70,9 @@ class ScreenPlaylistSongs extends StatelessWidget {
                         "https://cdn.pixabay.com/photo/2014/04/03/09/57/detective-309445_1280.png",
                       ),
                     ),
-                    SizedBox(height: 30,),
+                    SizedBox(
+                      height: 30,
+                    ),
                     Text("No songs")
                   ],
                 );
@@ -85,8 +97,19 @@ class ScreenPlaylistSongs extends StatelessWidget {
                                 imageUri: imagebyte ?? Uint8List(0),
                                 songPath: songs[index].songPath,
                               );
-                              removeSongFromPlaylist(
+                              // removeSongFromPlaylist(
+                              //     playlistName, playListSongModel);
+                              showDelete(
+                            context: context,
+                            title: "Remove song",
+                            content: """Are you sure want to remove "${songs[index].displayNameWOExt}" from this playlist?""",
+                           
+                            delete: (){
+                                  removeSongFromPlaylist(
                                   playlistName, playListSongModel);
+                              Get.back();
+                            },
+                          );
                             },
                             icon: Icons.remove_circle,
                             label: "Remove",

@@ -55,12 +55,12 @@ class _ScreenSelecteState extends State<ScreenSelecte> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        onPressed: () {
-                          // Handle delete action
-                        },
-                        icon: const Icon(Icons.delete, color: white),
-                      ),
+                      // IconButton(
+                      //   onPressed: () {
+                      //     // Handle delete action
+                      //   },
+                      //   icon: const Icon(Icons.delete, color: white),
+                      // ),
                       IconButton(
                         onPressed: () {
                           List<dynamic> songs=[];

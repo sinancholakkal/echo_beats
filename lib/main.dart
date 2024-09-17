@@ -22,7 +22,6 @@ Future<void> main() async {
   
   await Hive.initFlutter();
   await getTheme();
-
   if(!Hive.isAdapterRegistered(SongModelClassAdapter().typeId)){
     Hive.registerAdapter(SongModelClassAdapter());
   }

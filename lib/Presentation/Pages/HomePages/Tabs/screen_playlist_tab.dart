@@ -142,6 +142,7 @@ class PlaylistTab extends StatelessWidget {
                                         value[index].name;
                                     showDialogForCreatePlaylist(context,
                                         id: key);
+
                                   },
                                   icon: Icons.edit,
                                   label: "Edit",
@@ -230,6 +231,7 @@ class PlaylistTab extends StatelessWidget {
               TextButton(
                   onPressed: () {
                     Get.back();
+                    controllClear();
                   },
                   child: const Text(
                     "Cancel",
@@ -244,12 +246,12 @@ class PlaylistTab extends StatelessWidget {
                     print("validate------------------");
                     if (id != null) {
                       updatePlaylistName(id, _playlistTextController.text);
-                      _playlistTextController.clear();
                     } else {
                       createPlayList(
                           playlistName: _playlistTextController.text);
                           _playlistTextController.clear();
                     }
+                    controllClear();
                     Get.back();
                     
                   } else {
@@ -276,5 +278,9 @@ class PlaylistTab extends StatelessWidget {
       }
     }
     return false;
+  }
+
+  void controllClear(){
+    _playlistTextController.clear();
   }
 }

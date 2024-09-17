@@ -1,10 +1,17 @@
 import 'dart:developer';
+import 'dart:typed_data';
 import 'package:echo_beats_music/Presentation/Pages/screen_add_playlist.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_selecte.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
+import 'package:echo_beats_music/database/functions_hive/all_songs/db_function.dart';
+import 'package:echo_beats_music/database/functions_hive/favourite/db_function.dart';
+import 'package:echo_beats_music/database/models/allsongs/all_song_model.dart';
+import 'package:echo_beats_music/database/models/favourite/favourite_class_model.dart';
+import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
+import 'package:echo_beats_music/database/models/recentlyPlayed/recently_played_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/route_manager.dart';
@@ -19,6 +26,8 @@ class MusicTab extends StatefulWidget {
   State<MusicTab> createState() => _MusicTabState();
 }
 
+ValueNotifier<List<dynamic>> filterList = ValueNotifier([]);
+
 class _MusicTabState extends State<MusicTab> {
   final ValueNotifier<SongSortType?> _currentSortType = ValueNotifier(
       SongSortType
@@ -29,8 +38,9 @@ class _MusicTabState extends State<MusicTab> {
   ValueNotifier<bool> listToGrid = ValueNotifier<bool>(false);
   final _audioQuery = OnAudioQuery();
   ValueNotifier<int?> songCount = ValueNotifier<int?>(null);
-  List<SongModel> allSong = [];
-  String? filter;
+  List<dynamic> allSong = [];
+  //String? filter;
+  ValueNotifier<String> filter = ValueNotifier<String>('');
 
   playSong(String? uri) {
     try {
@@ -46,10 +56,9 @@ class _MusicTabState extends State<MusicTab> {
   @override
   void initState() {
     super.initState();
+    filterList.notifyListeners();
     searchController.addListener(() {
-      setState(() {
-        filter = searchController.text;
-      });
+      filter.value = searchController.text;
     });
   }
 
@@ -63,12 +72,12 @@ class _MusicTabState extends State<MusicTab> {
             children: [
               sizeBox(h: 40),
               ValueListenableBuilder(
-                valueListenable: songCount,
+                valueListenable: allSongNotifier,
                 builder: (BuildContext context, value, Widget? child) {
                   return searchField(
                     txtControl: searchController,
                     color: white,
-                    hint: "Search by name ${value ?? ""}",
+                    hint: "Search by name ${value.length ?? ""}",
                     iconData: Icons.search,
                     showCursor: true,
                     onTap: () {},
@@ -161,225 +170,307 @@ class _MusicTabState extends State<MusicTab> {
                     valueListenable: _currentSortType,
                     builder: (BuildContext context, sortValue, Widget? child) {
                       //Switching  song in device-----------------
-                      return FutureBuilder<List<SongModel>>(
-                          future: _audioQuery.querySongs(
-                            sortType: sortValue,
-                            orderType: orderType,
-                            uriType: UriType.EXTERNAL,
-                            ignoreCase: true,
-                          ),
-                          builder: (context, item) {
-                            if (item.connectionState == ConnectionState.done) {
-                              if (item.data != null) {
-                                songCount.value = item.data!.length;
-                              }
-                            }
+                      return ValueListenableBuilder(
+                        valueListenable: filter,
+                        builder:
+                            (BuildContext context, filterValue, Widget? child) {
+                          return FutureBuilder<List<SongModel>>(
+                              future: _audioQuery.querySongs(
+                                sortType: sortValue,
+                                orderType: orderType,
+                                uriType: UriType.EXTERNAL,
+                                ignoreCase: true,
+                              ),
+                              builder: (context, item) {
+                                if (item.connectionState ==
+                                    ConnectionState.done) {
+                                  if (item.data != null) {
+                                    songCount.value = item.data!.length;
+                                  }
+                                }
 
-                            if (item.data == null) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-                            if (item.data!.isEmpty) {
-                              return const Center(
-                                child: Text("No Songs"),
-                              );
-                            }
+                                if (item.data == null) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+                                if (item.data!.isEmpty) {
+                                  return const Center(
+                                    child: Text("No Songs"),
+                                  );
+                                }
 
-                            List<SongModel> filterList = [];
-                            if (filter != null && filter!.isNotEmpty) {
-                              filterList = item.data!
-                                  .where((song) => song.displayNameWOExt
-                                      .toLowerCase()
-                                      .contains(filter!.toLowerCase()))
-                                  .toList();
-                            } else {
-                              filterList = item.data!;
-                            }
+                                //List<SongModel> filterList = [];
+                                if (filterValue != null &&
+                                    filterValue!.isNotEmpty) {
+                                  filterList.value = item.data!
+                                      .where((song) => song.displayNameWOExt
+                                          .toLowerCase()
+                                          .contains(filterValue!.toLowerCase()))
+                                      .toList();
+                                } else {
+                                  filterList.value = item.data!;
+                                }
 
-                            allSong.addAll(filterList);
-                            if (filterList.isNotEmpty) {
-                              return ValueListenableBuilder(
-                                valueListenable: listToGrid,
-                                builder: (BuildContext context, value,
-                                    Widget? child) {
-                                  if (value == false) {
-                                    // List View using ListView
-                                    return ListView(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      children: List.generate(filterList.length,
-                                          (index) {
-                                        return musicCard(
-                                          queryArtWidget: QueryArtworkWidget(
-                                            artworkWidth: 50,
-                                            artworkHeight: 50,
-                                            artworkFit: BoxFit.fill,
-                                            id: filterList[index].id,
-                                            type: ArtworkType.AUDIO,
-                                            nullArtworkWidget: const Icon(
-                                              Icons.music_note,
-                                              size: 30,
-                                              color: white,
-                                            ),
-                                          ),
-                                          musicName: filterList[index]
-                                              .displayNameWOExt,
-                                          artistName:
-                                              "${filterList[index].artist}",
-                                          operation: () {
-                                            Get.to(
-                                              () => ScreenPlaying(
-                                                songModelList: filterList,
-                                                idx: index,
-                                              ),
-                                              transition: Transition.cupertino,
-                                              duration:
-                                                  const Duration(seconds: 1),
-                                            );
-                                          },
-                                          PopupMenuButton: PopupMenuButton(
-                                            itemBuilder: (context) {
-                                              return [
-                                                PopupMenuItem(
-                                                  child: const Text(
-                                                      "Add to playlist"),
-                                                  onTap: () {
-                                                    List<dynamic> songs = [];
-                                                    songs
-                                                        .add(filterList[index]);
-                                                    Get.to(() =>
-                                                        ScreenAddPlaylist(
-                                                            songModel: songs));
-                                                  },
-                                                ),
-                                                const PopupMenuItem(
-                                                    child: Text(
-                                                        "Add to favorite")),
-                                                const PopupMenuItem(
-                                                    child: Text("Delete"))
-                                              ];
-                                            },
-                                            iconColor: white,
-                                          ),
-                                          context: context,
-                                        );
-                                      }),
-                                    );
-                                  } else {
-                                    // Grid View using GridView
-                                    return GridView.count(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      crossAxisCount: 2,
-                                      mainAxisSpacing: 4,
-                                      crossAxisSpacing: 4,
-                                      children: List.generate(filterList.length,
-                                          (index) {
-                                        return InkWell(
-                                          onTap: () {
-                                            Get.to(
-                                              () => ScreenPlaying(
-                                                songModelList: filterList,
-                                                idx: index,
-                                              ),
-                                              transition: Transition.cupertino,
-                                              duration:
-                                                  const Duration(seconds: 1),
-                                            );
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary,
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(16)),
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 8),
-                                                  child: CircleAvatar(
-                                                    radius: 56,
-                                                    child: QueryArtworkWidget(
-                                                      artworkWidth: 100,
-                                                      artworkHeight: 100,
-                                                      artworkFit: BoxFit.fill,
-                                                      id: filterList[index].id,
-                                                      type: ArtworkType.AUDIO,
-                                                      nullArtworkWidget:
-                                                          const Icon(
-                                                        Icons.music_note,
-                                                        size: 60,
-                                                        color: white,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 10),
-                                                  child: MarqueeText(
-                                                    speed: 14,
-                                                    text: TextSpan(
-                                                      text: filterList[index]
-                                                          .displayNameWOExt,
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: white,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                MarqueeText(
-                                                  speed: 14,
-                                                  text: TextSpan(
-                                                    text:
-                                                        "${filterList[index].artist}",
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
+                                allSong.addAll(filterList.value);
+                                if (filterList.value.isNotEmpty) {
+                                  return ValueListenableBuilder(
+                                    valueListenable: listToGrid,
+                                    builder: (BuildContext context, value,
+                                        Widget? child) {
+                                      if (value == false) {
+                                        // List View using ListView
+                                        return ValueListenableBuilder(
+                                          valueListenable: filterList,
+                                          builder: (BuildContext context,
+                                              filterListSongs, Widget? child) {
+                                            return ListView(
+                                              shrinkWrap: true,
+                                              physics:
+                                                  const NeverScrollableScrollPhysics(),
+                                              children: List.generate(
+                                                  filterListSongs.length,
+                                                  (index) {
+                                                return musicCard(
+                                                  queryArtWidget:
+                                                      QueryArtworkWidget(
+                                                    artworkWidth: 50,
+                                                    artworkHeight: 50,
+                                                    artworkFit: BoxFit.fill,
+                                                    id: filterListSongs[index]
+                                                        .id,
+                                                    type: ArtworkType.AUDIO,
+                                                    nullArtworkWidget:
+                                                        const Icon(
+                                                      Icons.music_note,
+                                                      size: 30,
                                                       color: white,
                                                     ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                                                  musicName:
+                                                      filterListSongs[index]
+                                                          .displayNameWOExt,
+                                                  artistName:
+                                                      "${filterListSongs[index].artist}",
+                                                  operation: () {
+                                                    Get.to(
+                                                      () => ScreenPlaying(
+                                                        songModelList:
+                                                            filterListSongs,
+                                                        idx: index,
+                                                      ),
+                                                      transition:
+                                                          Transition.cupertino,
+                                                      duration: const Duration(
+                                                          seconds: 1),
+                                                    );
+                                                  },
+                                                  PopupMenuButton:
+                                                      PopupMenuButton(
+                                                    itemBuilder: (context) {
+                                                      return [
+                                                        PopupMenuItem(
+                                                          child: const Text(
+                                                              "Add to playlist"),
+                                                          onTap: () {
+                                                            List<dynamic>
+                                                                songs = [];
+                                                            songs.add(
+                                                                filterListSongs[
+                                                                    index]);
+                                                            Get.to(() =>
+                                                                ScreenAddPlaylist(
+                                                                    songModel:
+                                                                        songs));
+                                                          },
+                                                        ),
+                                                        PopupMenuItem(
+                                                            onTap: () {
+                                                              songAdtoFavorite(
+                                                                  filterListSongs[index]);
+                                                            },
+                                                            child: Text(
+                                                                "Add to favorite")),
+                                                        PopupMenuItem(
+                                                            onTap: () {
+                                                              String path =
+                                                                  filterListSongs[
+                                                                          index]
+                                                                      .data;
+                                                             
+                                                                showDelete(
+                                                                context:
+                                                                    context,
+                                                                title:
+                                                                    "Delete Song",
+                                                                content:
+                                                                    """Are you sure you want to delete this song permanently? '${filterListSongs[index].displayNameWOExt}'""",
+                                                                playlistName:
+                                                                    "",
+                                                                delete: () {
+                                                                  setState(() {
+                                                                    deleteSong(
+                                                                      path);
+                                                                  });
+                                                                 
+                                                                  Get.back();
+                                                                },
+                                                              );
+                                                      
+
+                                                            },
+                                                            child:
+                                                                Text("Delete"))
+                                                      ];
+                                                    },
+                                                    iconColor: white,
+                                                  ),
+                                                  context: context,
+                                                );
+                                              }),
+                                            );
+                                          },
                                         );
-                                      }),
-                                    );
-                                  }
-                                },
-                              );
-                            } else {
-                              return const Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image(
-                                    width: 160,
-                                    image: NetworkImage(
-                                      "https://cdn.pixabay.com/photo/2014/04/03/09/57/detective-309445_1280.png",
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  Text("No search results")
-                                ],
-                              );
-                            }
-                          });
+                                      } else {
+                                        // Grid View using GridView
+                                        return ValueListenableBuilder(
+                                          valueListenable: filterList,
+                                          builder: (BuildContext context,
+                                              filterListvalue, Widget? child) {
+                                            return GridView.count(
+                                              shrinkWrap: true,
+                                              physics:
+                                                  const NeverScrollableScrollPhysics(),
+                                              crossAxisCount: 2,
+                                              mainAxisSpacing: 4,
+                                              crossAxisSpacing: 4,
+                                              children: List.generate(
+                                                  filterListvalue.length,
+                                                  (index) {
+                                                return InkWell(
+                                                  onTap: () {
+                                                    Get.to(
+                                                      () => ScreenPlaying(
+                                                        songModelList:
+                                                            filterListvalue,
+                                                        idx: index,
+                                                      ),
+                                                      transition:
+                                                          Transition.cupertino,
+                                                      duration: const Duration(
+                                                          seconds: 1),
+                                                    );
+                                                  },
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .secondary,
+                                                      borderRadius:
+                                                          const BorderRadius
+                                                              .all(
+                                                              Radius.circular(
+                                                                  16)),
+                                                    ),
+                                                    child: Column(
+                                                      children: [
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(top: 8),
+                                                          child: CircleAvatar(
+                                                            radius: 56,
+                                                            child:
+                                                                QueryArtworkWidget(
+                                                              artworkWidth: 100,
+                                                              artworkHeight:
+                                                                  100,
+                                                              artworkFit:
+                                                                  BoxFit.fill,
+                                                              id: filterListvalue[
+                                                                      index]
+                                                                  .id,
+                                                              type: ArtworkType
+                                                                  .AUDIO,
+                                                              nullArtworkWidget:
+                                                                  const Icon(
+                                                                Icons
+                                                                    .music_note,
+                                                                size: 60,
+                                                                color: white,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal:
+                                                                      10),
+                                                          child: MarqueeText(
+                                                            speed: 14,
+                                                            text: TextSpan(
+                                                              text: filterListvalue[
+                                                                      index]
+                                                                  .displayNameWOExt,
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: white,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        MarqueeText(
+                                                          speed: 14,
+                                                          text: TextSpan(
+                                                            text:
+                                                                "${filterListvalue[index].artist}",
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color: white,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              }),
+                                            );
+                                          },
+                                        );
+                                      }
+                                    },
+                                  );
+                                } else {
+                                  return const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Image(
+                                        width: 160,
+                                        image: NetworkImage(
+                                          "https://cdn.pixabay.com/photo/2014/04/03/09/57/detective-309445_1280.png",
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        height: 20,
+                                      ),
+                                      Text("No search results")
+                                    ],
+                                  );
+                                }
+                              });
+                        },
+                      );
                     },
                   );
                 },
@@ -481,5 +572,36 @@ class _MusicTabState extends State<MusicTab> {
         ],
       ),
     );
+  }
+
+  void songAdtoFavorite(var song) async {
+    Uint8List? imagebyte;
+    if (!isAlreadyFav(song)) {
+      if (await _audioQuery.queryArtwork(song.id, ArtworkType.AUDIO) != null) {
+        imagebyte = await _audioQuery.queryArtwork(song.id, ArtworkType.AUDIO);
+      }
+      final result = SongModelClass(
+          id: song.id,
+          displayNameWOExt: song.displayNameWOExt,
+          artist: song.artist ?? "unknown",
+          uri: song.uri,
+          imageUri: imagebyte ?? Uint8List(0),
+          songPath: song is RecentlyPlayedModel ||
+                  song is PlayListSongModel ||
+                  song is AllSongModel
+              ? song.songPath
+              : song.data);
+      //Adding song in favoraited
+      addSongToFavourite(result);
+      showAddedToast(msg: "Favorited");
+    } else {
+      showAddedToast(msg: "This song already exists in the favorite");
+    }
+  }
+
+  bool isAlreadyFav(var song) {
+    return favouriteClassModelList.value.any((item) {
+      return item.id == song.id;
+    });
   }
 }

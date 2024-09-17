@@ -53,7 +53,7 @@ class _ScreenSplashState extends State<ScreenSplash> {
     if(longedValue == null || longedValue ==false){
       splashTime();
     }else{
-      Get.off(()=>ScreenHomes(),
+      Get.off(()=>const ScreenHomes(),
       transition: Transition.cupertino,
       duration: const Duration(milliseconds: 500)
       );

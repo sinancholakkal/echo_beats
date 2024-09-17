@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_music_tab.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
@@ -31,6 +32,7 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
 
   ValueNotifier<List<AllSongModel>> allSong = ValueNotifier([]);
 
+
   playSong(String? uri) {
     try {
       AudioPlayerService.player.setAudioSource(
@@ -44,10 +46,10 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
 
   @override
   void initState() {
-    allSong.value =allSongNotifier.value;
+    allSong.value = allSongNotifier.value;
     allSong.value.shuffle();
     super.initState();
-   // fetchSongs();
+    // fetchSongs();
   }
 
   // Function to fetch songs only once
@@ -64,8 +66,8 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
   // }
 
   void shuffleSongs() {
-    allSong.value.shuffle();
-    allSong.notifyListeners(); // Notify the change to the UI
+    allSongNotifier.value.shuffle();
+    allSongNotifier.notifyListeners(); // Notify the change to the UI
   }
 
   @override
@@ -89,7 +91,7 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: ValueListenableBuilder<List<AllSongModel>>(
-          valueListenable: allSong,
+          valueListenable: allSongNotifier,
           builder: (context, value, child) {
             if (value.isEmpty) {
               return const Center(child: CircularProgressIndicator());
@@ -97,7 +99,7 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
             return ListView.builder(
               shrinkWrap: true,
               //physics: const NeverScrollableScrollPhysics(),
-              itemCount: value.length,
+              itemCount:value.length,
               itemBuilder: (BuildContext context, int index) {
                 return musicCard(
                   queryArtWidget: QueryArtworkWidget(
@@ -113,7 +115,7 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
                     ),
                   ),
                   musicName: value[index].displayNameWOExt,
-                  artistName: "${value[index].artist}",
+                  artistName: value[index].artist,
                   operation: () {
                     Get.to(
                       () => ScreenPlaying(
@@ -127,18 +129,28 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
                   PopupMenuButton: PopupMenuButton(
                     itemBuilder: (context) {
                       return [
-                         PopupMenuItem(child: const Text("Delete"),onTap: (){
-                          String? songPath =value[index].songPath;
-                          // deleteSong(songPath);
-                          showDelete(context: context, title: "Delete Song", content: """Are you sure you want to delete this song permanently? '${value[index].displayNameWOExt}'""", playlistName: "", delete: () { 
-                            deleteSong(songPath);
-                            
-                            Get.back();
-                            // setState(() {
-                              
-                            // });
-                           },);
-                        },),
+                        PopupMenuItem(
+                          child: const Text("Delete"),
+                          onTap: () {
+                            String? songPath = value[index].songPath;
+                            // deleteSong(songPath);
+                            showDelete(
+                              context: context,
+                              title: "Delete Song",
+                              content:
+                                  """Are you sure you want to delete this song permanently? '${value[index].displayNameWOExt}'""",
+                              playlistName: "",
+                              delete: () {
+                                setState(() {
+                                  deleteSong(songPath);
+                                });
+                               // filterList.notifyListeners();
+                              //  allSong.notifyListeners(); 
+                                Get.back();
+                              },
+                            );
+                          },
+                        ),
                         PopupMenuItem(
                           child: const Text("Add to favorite"),
                           onTap: () {
@@ -158,33 +170,35 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
       ),
     );
   }
+  
+  @override
   void songAdtoFavorite(var song) async {
     Uint8List? imagebyte;
-    if(!isAlreadyFav(song)){
+    if (!isAlreadyFav(song)) {
       if (await _audioQuery.queryArtwork(song.id, ArtworkType.AUDIO) != null) {
-      imagebyte = await _audioQuery.queryArtwork(song.id, ArtworkType.AUDIO);
-    }
-    final result = SongModelClass(
-        id: song.id,
-        displayNameWOExt: song.displayNameWOExt,
-        artist: song.artist ?? "unknown",
-        uri: song.uri,
-        imageUri: imagebyte ?? Uint8List(0),
-        songPath: song is RecentlyPlayedModel ||
-                song is PlayListSongModel ||
-                song is AllSongModel
-            ? song.songPath
-            : song.data);
-    //Adding song in favoraited
-    addSongToFavourite(result);
-    showAddedToast(msg: "Favorited");
-    }else{
+        imagebyte = await _audioQuery.queryArtwork(song.id, ArtworkType.AUDIO);
+      }
+      final result = SongModelClass(
+          id: song.id,
+          displayNameWOExt: song.displayNameWOExt,
+          artist: song.artist ?? "unknown",
+          uri: song.uri,
+          imageUri: imagebyte ?? Uint8List(0),
+          songPath: song is RecentlyPlayedModel ||
+                  song is PlayListSongModel ||
+                  song is AllSongModel
+              ? song.songPath
+              : song.data);
+      //Adding song in favoraited
+      addSongToFavourite(result);
+      showAddedToast(msg: "Favorited");
+    } else {
       showAddedToast(msg: "This song already exists in the favorite");
     }
   }
 
-  bool isAlreadyFav(var song){
-    return favouriteClassModelList.value.any((item){
+  bool isAlreadyFav(var song) {
+    return favouriteClassModelList.value.any((item) {
       return item.id == song.id;
     });
   }

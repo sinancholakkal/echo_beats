@@ -47,7 +47,7 @@ class ScreenAddPlaylist extends StatelessWidget {
                   IconButton(
                       onPressed: () {
                         print(songModel);
-                        showDialogForCreatePlaylist(context);
+                        showDialogForCreatePlaylist1(context);
                       },
                       icon:const Icon(
                         Icons.add,
@@ -123,11 +123,12 @@ class ScreenAddPlaylist extends StatelessWidget {
     );
   }
 
-  void showDialogForCreatePlaylist(context) {
+  void showDialogForCreatePlaylist1(context, {int? id}) {
     showDialog(
         context: context,
         builder: (_) {
           return AlertDialog(
+            backgroundColor: Theme.of(context).colorScheme.secondary,
             title: const Text("Create New Playlist"),
             content: Form(
               key: _formKey,
@@ -136,6 +137,8 @@ class ScreenAddPlaylist extends StatelessWidget {
                 validator: (val) {
                   if (val == null || val.isEmpty) {
                     return "Enter Playlist Name";
+                  } else if (isPlaylistNameAlreadyExists(val)) {
+                    return "Playlist name already exists";
                   }
                   return null;
                 },
@@ -145,6 +148,7 @@ class ScreenAddPlaylist extends StatelessWidget {
               TextButton(
                   onPressed: () {
                     Get.back();
+                   // controllClear();
                   },
                   child: const Text(
                     "Cancel",
@@ -157,9 +161,16 @@ class ScreenAddPlaylist extends StatelessWidget {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     print("validate------------------");
-                    createPlayList(playlistName: _playlistTextController.text);
-                    Navigator.of(context).pop();
-                    _playlistTextController.clear();
+                    if (id != null) {
+                      updatePlaylistName(id, _playlistTextController.text);
+                    } else {
+                      createPlayList(
+                          playlistName: _playlistTextController.text);
+                          _playlistTextController.clear();
+                    }
+                    // controllClear();
+                    Get.back();
+                    
                   } else {
                     print("Not validated----------------");
                   }
@@ -172,5 +183,17 @@ class ScreenAddPlaylist extends StatelessWidget {
             ],
           );
         });
+  }
+
+
+//Checking playlist name already exists
+  bool isPlaylistNameAlreadyExists(name) {
+    final allPlaylist = playlistsNotifier.value;
+    for (var item in allPlaylist) {
+      if (item.name == name) {
+        return true;
+      }
+    }
+    return false;
   }
 }

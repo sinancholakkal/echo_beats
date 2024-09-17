@@ -4,6 +4,7 @@ import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/route_manager.dart';
+import 'package:lottie/lottie.dart';
 import 'package:marquee_text/marquee_text.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
@@ -93,8 +94,8 @@ Widget homeCard({
   );
 }
 
-
-ValueNotifier<String> musicname =ValueNotifier('');
+ValueNotifier<String> musicNameNotifier = ValueNotifier("");
+ValueNotifier<bool> isPlaying = ValueNotifier<bool>(true);
 //music card--------
 Widget musicCard({
   //AssetImage? image,
@@ -113,23 +114,46 @@ Widget musicCard({
     child: SizedBox(
       height: 90,
       child: Center(
-        child: ListTile(
-          onTap: operation,
-          subtitleTextStyle:
-              const TextStyle(color: white, fontWeight: FontWeight.bold),
-          leading: queryArtWidget,
-          title: Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: MarqueeText(
-              speed: 14,
-              text: TextSpan(
-                  text: musicName,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold, color: white)),
-            ),
-          ),
-          subtitle: Text(artistName),
-          trailing: IconButton ?? PopupMenuButton,
+        child: ValueListenableBuilder(
+          valueListenable: musicNameNotifier,
+          builder: (BuildContext context, value, Widget? child) {
+            return ValueListenableBuilder(
+              valueListenable: isPlaying,
+              builder: (BuildContext context, isPlayValue, Widget? child) {
+                return ListTile(
+                  onTap: operation,
+                  titleTextStyle: TextStyle(
+                      color: value == musicName ? Colors.blue : white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold),
+                  subtitleTextStyle: const TextStyle(
+                      color: white, fontWeight: FontWeight.bold),
+                  leading: queryArtWidget,
+                  title: Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: MarqueeText(
+                      speed: 14,
+                      text: TextSpan(
+                        text: musicName,
+                        // style: const TextStyle(
+                        //   fontSize: 16,
+                        //   fontWeight: FontWeight.bold,
+                        //   color: white,
+                        // ),
+                      ),
+                    ),
+                  ),
+                  subtitle: Text(artistName),
+                  //trailing: IconButton ?? PopupMenuButton,
+                  trailing: value == musicName && isPlayValue == true
+                      ? Lottie.asset(
+                          "asset/nowplaying/Animation - 1726483606689.json",
+                        )
+                      : IconButton ?? PopupMenuButton,
+                );
+              },
+            );
+          },
         ),
       ),
     ),
@@ -165,7 +189,7 @@ void showDelete({
   required String title,
   required String content,
   int? key,
-  required String playlistName,
+  String? playlistName,
   required void Function() delete,
 }) {
   showDialog(
@@ -173,8 +197,8 @@ void showDelete({
     builder: (BuildContext context) {
       return AlertDialog(
         backgroundColor: Theme.of(context).colorScheme.secondary,
-        title: Text(title),
-        content: Text(content),
+        title: Text(title,style: const TextStyle(color: Colors.white),),
+        content: Text(content,style: const TextStyle(color: Colors.white),),
         actions: [
           TextButton(
               onPressed: () {
@@ -206,29 +230,84 @@ final showAddedToast = ({required String msg}) {
   );
 };
 
-Widget alertWithtext({required void Function() ok, required Widget content,required BuildContext context}){
+Widget alertWithtext(
+    {required void Function() ok,
+    required Widget content,
+    required BuildContext context}) {
   return AlertDialog(
     backgroundColor: Theme.of(context).colorScheme.secondary,
     title: const Text("Name"),
     content: content,
     actions: [
       TextButton(
-              onPressed: () {
-                Get.back();
-              },
-              child: const Text(
-                "Cancel",
-                style: TextStyle(color: white),
-              ),),
-              ElevatedButton(
-            style: ButtonStyle(
-                backgroundColor:
-                    WidgetStateProperty.all(AppColors.appNameColor)),
-            onPressed: ok,
-            child: const Text("Ok"),
-          )
+        onPressed: () {
+          Get.back();
+        },
+        child: const Text(
+          "Cancel",
+          style: TextStyle(color: white),
+        ),
+      ),
+      ElevatedButton(
+        style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(AppColors.appNameColor)),
+        onPressed: ok,
+        child: const Text("Ok"),
+      )
     ],
   );
 }
 
+Future<int?> showSleepModeDialog(BuildContext context)async {
+  int? sleepMinit;
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+        title: Text("Select Sleep Duration"),
+        content: Container(
+            width: double.maxFinite,
+            height: 200,
+            child: ListWheelScrollView.useDelegate(
+              physics: FixedExtentScrollPhysics(),
+              itemExtent: 50,
+              childDelegate: ListWheelChildBuilderDelegate(
+                  builder: (context, index) {
+                    return InkWell(
+                      child: minute(minit: index + 1),
+                      onTap: (){
+                        sleepMinit =index+1;
+                        print("${index+1} =============================================");
+                        Get.back();
+                      },
+                    );
+                  },
+                  childCount: 59),
+            )),
+        actions: [
+          TextButton(
+            child: const Text(
+              "Close",
+              style: TextStyle(color: Colors.white),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+  return sleepMinit;
+}
 
+
+Widget minute({required int minit}) {
+  return Container(
+    color: AppColors.appNameColor,
+    child: Center(
+      child: Text(minit.toString(),style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
+    ),
+  );
+}

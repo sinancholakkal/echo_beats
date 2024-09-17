@@ -53,6 +53,7 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
   List<AudioSource> songList = [];
   ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
   final _audioQuery = OnAudioQuery();
+  int min = 1;
 
   void playSong() async {
     try {
@@ -81,12 +82,15 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
       // Listen for the current song index change
       AudioPlayerService.player.currentIndexStream.listen((index) {
         if (index != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            musicNameNotifier.value =
+                widget.songModelList[index].displayNameWOExt;
+            musicNameNotifier.notifyListeners();
+            allSongNotifier.notifyListeners();
+          });
           currentIndex.value = index;
           chekk();
           addSongRecently();
-          // musicname.value = widget.songModelList[index].displayNameWOExt;
-          // musicname.notifyListeners();
-          // allSongNotifier.notifyListeners();
         }
       });
     } on Exception catch (e) {
@@ -118,11 +122,21 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
     });
   }
 
+  Future<void> sleepMode(int minite) async {
+    print("Sleep mode started============================================");
+    await Future.delayed(Duration(minutes: minite));
+    AudioPlayerService.player.stop();
+    isPlaying.value = false;
+    _playPause.value = false;
+    print("Sleep mode stoped============================================");
+  }
+
   @override
   void initState() {
     super.initState();
     playSong();
     AudioPlayerService.player.play();
+    isPlaying.value = true;
     durationSet();
 
     //playSong();
@@ -207,6 +221,22 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                                     .value]); //It is song list for adding playlist
                                 Get.to(
                                     () => ScreenAddPlaylist(songModel: song));
+                              },
+                            ),
+                            //for set sleep mode---------------------------
+                            PopupMenuItem(
+                              child: const Text("Sleep Mode"),
+                              onTap: (){
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) async {
+                                  int? minutes =
+                                      await showSleepModeDialog(context);
+                                  if (minutes != null) {
+                                    await sleepMode(minutes);
+                                  }else{
+                                    print(minutes);
+                                  }
+                                });
                               },
                             )
                           ];
@@ -390,6 +420,8 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                           size: 50,
                         ),
                       ),
+
+                      //Play pause-------------------------------------
                       ValueListenableBuilder(
                         valueListenable: _playPause,
                         builder: (BuildContext context, value, Widget? child) {
@@ -398,8 +430,10 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
                               _playPause.value = !_playPause.value;
                               if (_playPause.value == false) {
                                 AudioPlayerService.player.pause();
+                                isPlaying.value = false;
                               } else {
                                 AudioPlayerService.player.play();
+                                isPlaying.value = true;
                               }
                             },
                             icon: Icon(

@@ -15,7 +15,7 @@ class ScreenFavourate extends StatelessWidget {
   //final AudioPlayer _audioPlayer = AudioPlayer();
   //audioPlayerfinal _audioPlayer = AudioPlayer();
 
-  List<dynamic> sss=[...favouriteClassModelList.value];
+  List<dynamic> sss = [...favouriteClassModelList.value];
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class ScreenFavourate extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Favourate",
+          "Favorite",
           style: TextStyle(color: white),
         ),
         iconTheme: const IconThemeData(color: white),
@@ -51,7 +51,7 @@ class ScreenFavourate extends StatelessWidget {
                       queryArtWidget: QueryArtworkWidget(
                           id: value[index].id,
                           type: ArtworkType.AUDIO,
-                          nullArtworkWidget:const Icon(
+                          nullArtworkWidget: const Icon(
                             Icons.music_note,
                             size: 50,
                           )),
@@ -60,20 +60,20 @@ class ScreenFavourate extends StatelessWidget {
                       operation: () async {
                         print("---------------------------------------------");
                         print(favouriteClassModelList.value.length);
-                         AudioPlayerService.player.stop();
+                        AudioPlayerService.player.stop();
 
                         // Create the proper AudioSource with MediaItem
                         await AudioPlayerService.player.setAudioSource(
                           AudioSource.uri(
-                            Uri.parse(favouriteClassModelList.value[index].uri!),
+                            Uri.parse(
+                                favouriteClassModelList.value[index].uri!),
                             tag: MediaItem(
-                              id: favouriteClassModelList.value[index].id
-                                  .toString(),
-                              title: favouriteClassModelList
-                                  .value[index].displayNameWOExt,
-                              artist:
-                                  favouriteClassModelList.value[index].artist 
-                            ),
+                                id: favouriteClassModelList.value[index].id
+                                    .toString(),
+                                title: favouriteClassModelList
+                                    .value[index].displayNameWOExt,
+                                artist: favouriteClassModelList
+                                    .value[index].artist),
                           ),
                         );
                         Get.to(() => ScreenPlaying(
@@ -87,7 +87,17 @@ class ScreenFavourate extends StatelessWidget {
                       //Favorite button for remove song from favorite list
                       IconButton: IconButton(
                         onPressed: () {
-                          deleteFromFavorite(value[index].id);
+                          // deleteFromFavorite(value[index].id);
+                          showDelete(
+                            context: context,
+                            title: "Remove song",
+                            content: """Are you sure want to remove "${value[index].displayNameWOExt}" from favorite?""",
+                           
+                            delete: (){
+                              deleteFromFavorite(value[index].id);
+                              Get.back();
+                            },
+                          );
                         },
                         icon: const Icon(
                           Icons.favorite,

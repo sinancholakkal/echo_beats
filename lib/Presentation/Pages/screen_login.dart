@@ -33,9 +33,9 @@ class _ScreenLoginState extends State<ScreenLogin> {
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: Colors.white,
-          title: const Text('Permission Required'),
+          title: const Text('Permission Required',style: TextStyle(color: Colors.black),),
           content: const Text(
-              'Please grant audio permission and external storage in settings to continue.'),
+              'Please grant audio permission and external storage in settings to continue.',style: TextStyle(color: Colors.black),),
           actions: [
             TextButton(
               onPressed: () {

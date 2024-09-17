@@ -1,6 +1,5 @@
 import 'dart:typed_data';
-
-import 'package:echo_beats_music/Presentation/Pages/pppp.dart';
+import 'package:echo_beats_music/Presentation/Pages/Settigs/settings.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_add_playlist.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_favourate.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
@@ -35,7 +34,8 @@ class _HomeTabState extends State<HomeTab> {
   ValueNotifier<String> username =ValueNotifier<String>('');
   final TextEditingController updatingController = TextEditingController();
   List<SongModel> songs = [];
-  String? filter;
+  //String? filter;
+  ValueNotifier<String> filter =ValueNotifier<String>('');
 
   // Function to fetch songs
   void fetchSongs() async {
@@ -66,14 +66,16 @@ class _HomeTabState extends State<HomeTab> {
       }
     });
     searchController.addListener(() {
-      setState(() {
-        filter = searchController.text;
-      });
+
+        filter.value = searchController.text;
+
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    fetchSongs();
+    
     return SafeArea(
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -87,7 +89,7 @@ class _HomeTabState extends State<HomeTab> {
                 children: [
                   IconButton(
                     onPressed: () {
-                      Get.to(() => const Ppp(),
+                      Get.to(() => const ScreenSettings(),
                           transition: Transition.cupertino);
                     },
                     icon: const Icon(
@@ -215,30 +217,96 @@ class _HomeTabState extends State<HomeTab> {
               ),
               // Recently Played Songs
               sizeBox(h: 16),
-              ValueListenableBuilder<List<RecentlyPlayedModel>>(
-                valueListenable: recentlyplayedNotifier,
-                builder: (BuildContext context, value, Widget? child) {
-                  final revers = value.reversed.toList();
-
-                  // Check if there are recently played songs
-                  if (revers.isEmpty) {
-                    if (songs.isEmpty) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
+              ValueListenableBuilder(
+                valueListenable: filter,
+                builder: (BuildContext context, filterValue, Widget? child) { 
+                  return ValueListenableBuilder<List<RecentlyPlayedModel>>(
+                  valueListenable: recentlyplayedNotifier,
+                  builder: (BuildContext context, value, Widget? child) {
+                    final revers = value.reversed.toList();
+                
+                    // Check if there are recently played songs
+                    if (revers.isEmpty) {
+                      if (songs.isEmpty) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else {
+                        // Filter All Songs based on search input
+                        List<dynamic> filterListAll =
+                            filterValue != null && filterValue!.isNotEmpty
+                                ? songs
+                                    .where((song) => song.displayNameWOExt
+                                        .toLowerCase()
+                                        .contains(filterValue!.toLowerCase()))
+                                    .toList()
+                                : songs;
+                
+                        // Handle empty search results
+                        if (filterListAll.isEmpty) {
+                          return const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image(
+                                width: 160,
+                                image: NetworkImage(
+                                  "https://cdn.pixabay.com/photo/2014/04/03/09/57/detective-309445_1280.png",
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              Text("No search results"),
+                            ],
+                          );
+                        }
+                
+                        // Display All Songs
+                        return Column(
+                          children: List.generate(
+                            filterListAll.length,
+                            (index) {
+                              return musicCard(
+                                queryArtWidget: QueryArtworkWidget(
+                                  id: filterListAll[index].id,
+                                  type: ArtworkType.AUDIO,
+                                  nullArtworkWidget: const Icon(
+                                    Icons.music_note,
+                                    size: 30,
+                                    color: white,
+                                  ),
+                                ),
+                                musicName: filterListAll[index].title,
+                                artistName: filterListAll[index].artist ??
+                                    "Unknown Artist",
+                                operation: () {
+                                  // Navigating to playing screen
+                                  Get.to(
+                                    () => ScreenPlaying(
+                                      idx: index,
+                                      songModelList: filterListAll,
+                                    ),
+                                    transition: Transition.downToUp,
+                                    duration: const Duration(milliseconds: 500),
+                                  );
+                                },
+                                context: context,
+                              );
+                            },
+                          ),
+                        );
+                      }
                     } else {
-                      // Filter All Songs based on search input
-                      List<dynamic> filterListAll =
-                          filter != null && filter!.isNotEmpty
-                              ? songs
+                      // Filter Recently Played Songs based on search input
+                      List<RecentlyPlayedModel> filterList =
+                          filterValue != null && filterValue!.isNotEmpty
+                              ? revers
                                   .where((song) => song.displayNameWOExt
                                       .toLowerCase()
-                                      .contains(filter!.toLowerCase()))
+                                      .contains(filterValue!.toLowerCase()))
                                   .toList()
-                              : songs;
-
+                              : revers;
+                
                       // Handle empty search results
-                      if (filterListAll.isEmpty) {
+                      if (filterList.isEmpty) {
                         return const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -253,15 +321,15 @@ class _HomeTabState extends State<HomeTab> {
                           ],
                         );
                       }
-
-                      // Display All Songs
+                
+                      // Display Recently Played Songs
                       return Column(
                         children: List.generate(
-                          filterListAll.length,
+                          filterList.length,
                           (index) {
                             return musicCard(
                               queryArtWidget: QueryArtworkWidget(
-                                id: filterListAll[index].id,
+                                id: filterList[index].id,
                                 type: ArtworkType.AUDIO,
                                 nullArtworkWidget: const Icon(
                                   Icons.music_note,
@@ -269,15 +337,35 @@ class _HomeTabState extends State<HomeTab> {
                                   color: white,
                                 ),
                               ),
-                              musicName: filterListAll[index].title,
-                              artistName: filterListAll[index].artist ??
-                                  "Unknown Artist",
+                              musicName: filterList[index].displayNameWOExt,
+                              artistName: filterList[index].artist,
+                              PopupMenuButton:
+                                  PopupMenuButton(itemBuilder: (context) {
+                                return [
+                                  //It is for add song into playlist
+                                  PopupMenuItem(
+                                    child: Text("Add to playlist"),
+                                    onTap: () {
+                                      List<dynamic> songs = [];
+                                      songs.add(filterList[index]);
+                                      Get.to(() =>
+                                          ScreenAddPlaylist(songModel: songs));
+                                    },
+                                  ),
+                                  PopupMenuItem(
+                                    child: Text("Add to favorite"),
+                                    onTap: (){
+                                      songAdtoFavorite(filterList[index]);
+                                    },
+                                  )
+                                ];
+                              }),
                               operation: () {
                                 // Navigating to playing screen
                                 Get.to(
                                   () => ScreenPlaying(
                                     idx: index,
-                                    songModelList: filterListAll,
+                                    songModelList: filterList,
                                   ),
                                   transition: Transition.downToUp,
                                   duration: const Duration(milliseconds: 500),
@@ -289,90 +377,10 @@ class _HomeTabState extends State<HomeTab> {
                         ),
                       );
                     }
-                  } else {
-                    // Filter Recently Played Songs based on search input
-                    List<RecentlyPlayedModel> filterList =
-                        filter != null && filter!.isNotEmpty
-                            ? revers
-                                .where((song) => song.displayNameWOExt
-                                    .toLowerCase()
-                                    .contains(filter!.toLowerCase()))
-                                .toList()
-                            : revers;
-
-                    // Handle empty search results
-                    if (filterList.isEmpty) {
-                      return const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image(
-                            width: 160,
-                            image: NetworkImage(
-                              "https://cdn.pixabay.com/photo/2014/04/03/09/57/detective-309445_1280.png",
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          Text("No search results"),
-                        ],
-                      );
-                    }
-
-                    // Display Recently Played Songs
-                    return Column(
-                      children: List.generate(
-                        filterList.length,
-                        (index) {
-                          return musicCard(
-                            queryArtWidget: QueryArtworkWidget(
-                              id: filterList[index].id,
-                              type: ArtworkType.AUDIO,
-                              nullArtworkWidget: const Icon(
-                                Icons.music_note,
-                                size: 30,
-                                color: white,
-                              ),
-                            ),
-                            musicName: filterList[index].displayNameWOExt,
-                            artistName: filterList[index].artist,
-                            PopupMenuButton:
-                                PopupMenuButton(itemBuilder: (context) {
-                              return [
-                                //It is for add song into playlist
-                                PopupMenuItem(
-                                  child: Text("Add to playlist"),
-                                  onTap: () {
-                                    List<dynamic> songs = [];
-                                    songs.add(filterList[index]);
-                                    Get.to(() =>
-                                        ScreenAddPlaylist(songModel: songs));
-                                  },
-                                ),
-                                PopupMenuItem(
-                                  child: Text("Add to favorite"),
-                                  onTap: (){
-                                    songAdtoFavorite(filterList[index]);
-                                  },
-                                )
-                              ];
-                            }),
-                            operation: () {
-                              // Navigating to playing screen
-                              Get.to(
-                                () => ScreenPlaying(
-                                  idx: index,
-                                  songModelList: filterList,
-                                ),
-                                transition: Transition.downToUp,
-                                duration: const Duration(milliseconds: 500),
-                              );
-                            },
-                            context: context,
-                          );
-                        },
-                      ),
-                    );
-                  }
-                },
+                  },
+                );
+                 },
+                
               ),
             ],
           ),
