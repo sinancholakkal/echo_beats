@@ -55,12 +55,6 @@ class _ScreenSelecteState extends State<ScreenSelecte> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // IconButton(
-                      //   onPressed: () {
-                      //     // Handle delete action
-                      //   },
-                      //   icon: const Icon(Icons.delete, color: white),
-                      // ),
                       IconButton(
                         onPressed: () {
                           List<dynamic> songs=[];
@@ -111,12 +105,6 @@ class _ScreenSelecteState extends State<ScreenSelecte> {
                         builder:
                             (BuildContext context, bool value, Widget? child) {
                           return ListTile(
-                            // leading: Icon(
-                            //   value
-                            //       ? Icons.check_box
-                            //       : Icons.check_box_outline_blank,
-                            //   color: white,
-                            // ),
                             leading: IconButton(onPressed: (){
                               isSelected[index].value = !value;
                             }, icon: Icon(value? Icons.check_box : Icons.check_box_outline_blank)),

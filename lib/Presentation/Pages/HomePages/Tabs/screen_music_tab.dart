@@ -77,7 +77,7 @@ class _MusicTabState extends State<MusicTab> {
                   return searchField(
                     txtControl: searchController,
                     color: white,
-                    hint: "Search by name ${value.length ?? ""}",
+                    hint: "Search by name ${value.length}",
                     iconData: Icons.search,
                     showCursor: true,
                     onTap: () {},
@@ -289,38 +289,9 @@ class _MusicTabState extends State<MusicTab> {
                                                               songAdtoFavorite(
                                                                   filterListSongs[index]);
                                                             },
-                                                            child: Text(
+                                                            child: const Text(
                                                                 "Add to favorite")),
-                                                        PopupMenuItem(
-                                                            onTap: () {
-                                                              String path =
-                                                                  filterListSongs[
-                                                                          index]
-                                                                      .data;
-                                                             
-                                                                showDelete(
-                                                                context:
-                                                                    context,
-                                                                title:
-                                                                    "Delete Song",
-                                                                content:
-                                                                    """Are you sure you want to delete this song permanently? '${filterListSongs[index].displayNameWOExt}'""",
-                                                                playlistName:
-                                                                    "",
-                                                                delete: () {
-                                                                  setState(() {
-                                                                    deleteSong(
-                                                                      path);
-                                                                  });
-                                                                 
-                                                                  Get.back();
-                                                                },
-                                                              );
-                                                      
-
-                                                            },
-                                                            child:
-                                                                Text("Delete"))
+                                                        
                                                       ];
                                                     },
                                                     iconColor: white,

@@ -1,9 +1,7 @@
 import 'dart:developer';
-import 'dart:io';
 import 'dart:typed_data';
-
-import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_music_tab.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
+import 'package:echo_beats_music/Presentation/Pages/screen_selecte.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
@@ -32,7 +30,6 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
 
   ValueNotifier<List<AllSongModel>> allSong = ValueNotifier([]);
 
-
   playSong(String? uri) {
     try {
       AudioPlayerService.player.setAudioSource(
@@ -49,21 +46,8 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
     allSong.value = allSongNotifier.value;
     allSong.value.shuffle();
     super.initState();
-    // fetchSongs();
   }
 
-  // Function to fetch songs only once
-  // void fetchSongs() async {
-  //   List<SongModel> songs = await _audioQuery.querySongs(
-  //     sortType: null,
-  //     orderType: OrderType.ASC_OR_SMALLER,
-  //     uriType: UriType.EXTERNAL,
-  //     ignoreCase: true,
-  //   );
-  //   songs.shuffle();
-  //   allSong.value = songs;
-  //   songCount.value = songs.length;
-  // }
 
   void shuffleSongs() {
     allSongNotifier.value.shuffle();
@@ -99,7 +83,7 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
             return ListView.builder(
               shrinkWrap: true,
               //physics: const NeverScrollableScrollPhysics(),
-              itemCount:value.length,
+              itemCount: value.length,
               itemBuilder: (BuildContext context, int index) {
                 return musicCard(
                   queryArtWidget: QueryArtworkWidget(
@@ -130,33 +114,19 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
                     itemBuilder: (context) {
                       return [
                         PopupMenuItem(
-                          child: const Text("Delete"),
-                          onTap: () {
-                            String? songPath = value[index].songPath;
-                            // deleteSong(songPath);
-                            showDelete(
-                              context: context,
-                              title: "Delete Song",
-                              content:
-                                  """Are you sure you want to delete this song permanently? '${value[index].displayNameWOExt}'""",
-                              playlistName: "",
-                              delete: () {
-                                setState(() {
-                                  deleteSong(songPath);
-                                });
-                               // filterList.notifyListeners();
-                              //  allSong.notifyListeners(); 
-                                Get.back();
-                              },
-                            );
-                          },
-                        ),
-                        PopupMenuItem(
                           child: const Text("Add to favorite"),
                           onTap: () {
                             songAdtoFavorite(value[index]);
                           },
                         ),
+                        PopupMenuItem(
+                          child: const Text("Add to playlist"),
+                          onTap: () {
+                            Get.to(() => ScreenSelecte(),
+                                transition: Transition.cupertino,
+                                duration: const Duration(milliseconds: 500));
+                          },
+                        )
                       ];
                     },
                     iconColor: white,
@@ -170,8 +140,7 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
       ),
     );
   }
-  
-  @override
+
   void songAdtoFavorite(var song) async {
     Uint8List? imagebyte;
     if (!isAlreadyFav(song)) {

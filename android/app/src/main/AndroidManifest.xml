@@ -1,18 +1,26 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" /> -->
-     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.sinandevoloper.ownmusicplayer">
+        <!-- Permissions for Android 11 and below -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
-    <!-- <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/> -->
-  <uses-permission android:name="android.permission.WAKE_LOCK"/>
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-  <!-- ALSO ADD THIS PERMISSION IF TARGETING SDK 34 -->
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <!-- Manage external storage for Android 11 and above (optional, but requires user approval via settings) -->
+    <!-- <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" /> -->
+
+    <!-- For older Android versions (below Android 13) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+      <!-- Specific media access permissions for Android 13+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" /> <!-- For audio files -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- For image files -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> <!-- For video files -->
+
+    <!-- Required for background playback -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+
       <queries>
         <intent>
             <action android:name="android.intent.action.SEND" />
@@ -20,9 +28,9 @@
         </intent>
     </queries>
     <application
-        android:label="echo_beats_music"
+        android:label="Own Music Player"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
          <activity
             android:name="com.ryanheise.audioservice.AudioServiceActivity"
             android:launchMode="singleTop"

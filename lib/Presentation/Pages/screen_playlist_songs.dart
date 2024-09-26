@@ -1,11 +1,9 @@
 import 'dart:typed_data';
-
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_selecte.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
-import 'package:echo_beats_music/database/functions_hive/favourite/db_function.dart';
 import 'package:echo_beats_music/database/functions_hive/playlist/db_function_playlist.dart';
 import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +80,7 @@ class ScreenPlaylistSongs extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return Slidable(
                       endActionPane: ActionPane(
-                        motion: StretchMotion(),
+                        motion: const StretchMotion(),
                         children: [
                           //slidable------------------
                           SlidableAction(
@@ -97,8 +95,6 @@ class ScreenPlaylistSongs extends StatelessWidget {
                                 imageUri: imagebyte ?? Uint8List(0),
                                 songPath: songs[index].songPath,
                               );
-                              // removeSongFromPlaylist(
-                              //     playlistName, playListSongModel);
                               showDelete(
                             context: context,
                             title: "Remove song",
@@ -147,8 +143,6 @@ class ScreenPlaylistSongs extends StatelessWidget {
                                 songModelList: songs,
                               ));
 
-                          //Start playback
-                          //await AudioPlayerService.player.play();
                         },
                         context: context,
                       ),

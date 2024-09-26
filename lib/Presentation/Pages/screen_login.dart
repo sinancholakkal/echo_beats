@@ -1,7 +1,6 @@
 import 'package:echo_beats_music/Presentation/Pages/HomePages/screen_home.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
-import 'package:echo_beats_music/main.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,37 +18,99 @@ class _ScreenLoginState extends State<ScreenLogin> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameControll = TextEditingController();
 
-  Future<void> handlePermission() async {
-    var statusStorage = await Permission.manageExternalStorage.status;
+//   Future<void> handlePermission() async {
+//     var statusStorage = await Permission.manageExternalStorage.status;
 
-    var status = await Permission.audio.status;
-    if (status.isGranted && statusStorage.isGranted) {
-      Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-        return const ScreenHomes();
-      }));
-    } else if (status.isDenied) {
-      // Redirect user to settings if permission is denied
+//     var status = await Permission.audio.status;
+//     if (status.isGranted && statusStorage.isGranted) {
+//       Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
+//         return const ScreenHomes();
+//       }));
+//     } else if (status.isDenied) {
+//       // Redirect user to settings if permission is denied
+//       showDialog(
+//         context: context,
+//         builder: (context) => AlertDialog(
+//           backgroundColor: Colors.white,
+//           title: const Text(
+//             'Permission Required',
+//             style: TextStyle(color: Colors.black),
+//           ),
+//           content: const Text(
+//             """Please grant audio permission and external storage in settings to continue. Tap 'Open Settings' →
+// Tap 'Permissions' →
+// Select 'Music and Audio'""",
+//             style: TextStyle(color: Colors.black),
+//           ),
+//           actions: [
+//             TextButton(
+//               onPressed: () {
+//                 openAppSettings(); // Redirect to settings
+//               },
+//               child: const Text('Open Settings'),
+//             ),
+//           ],
+//         ),
+//       );
+//     } else if (statusStorage.isDenied) {
+//       await Permission.manageExternalStorage.request();
+//     }
+//   }
+
+Future<void> handlePermission() async {
+  // Check the status of manageExternalStorage (for Android 11+)
+  var statusStorage = await Permission.manageExternalStorage.status;
+
+  // Check the status of audio permission
+  var statusAudio = await Permission.audio.status;
+  var storage = await Permission.storage.status;
+
+  // If both permissions are granted, navigate to the home screen
+  if (statusAudio.isGranted||storage.isGranted || statusStorage.isGranted) {
+    await setValueInSharedprfs(context);
+    // Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
+    //   return const ScreenHomes();
+    // }));
+    Get.off(()=>const ScreenHomes(),transition: Transition.circularReveal);
+  } else {
+    // Handle denied permissions
+    //statusAudio = await Permission.audio.request();
+
+      // Show an alert to guide the user to grant permissions
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: Colors.white,
-          title: const Text('Permission Required',style: TextStyle(color: Colors.black),),
+          title: const Text(
+            'Permission Required',
+            style: TextStyle(color: Colors.black),
+          ),
           content: const Text(
-              'Please grant audio permission and external storage in settings to continue.',style: TextStyle(color: Colors.black),),
+            """Please grant audio permission and external storage in settings to continue. Tap 'Open Settings' →
+Tap 'Permissions' →
+Select 'Music and Audio'""",
+            style: TextStyle(color: Colors.black),
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 openAppSettings(); // Redirect to settings
+                Get.back();
               },
               child: const Text('Open Settings'),
             ),
           ],
         ),
       );
-    } else if (statusStorage.isDenied) {
-      await Permission.manageExternalStorage.request();
-    }
+
+
+    // Request MANAGE_EXTERNAL_STORAGE permission
+    // if (statusStorage.isDenied) {
+    //   await Permission.manageExternalStorage.request();
+    // }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -86,13 +147,13 @@ class _ScreenLoginState extends State<ScreenLogin> {
                             ),
                             children: [
                               const TextSpan(
-                                text: 'Echo', // First part
+                                text: 'Own', // First part
                               ),
                               const TextSpan(
-                                text: '\nBeats\n', // Second part
+                                text: '\nMusic\n', // Second part
                               ),
                               TextSpan(
-                                text: "Music.",
+                                text: "Player.",
                                 style: GoogleFonts.poppins(
                                   fontSize: 70,
                                   fontWeight: FontWeight.w600,
@@ -141,20 +202,16 @@ class _ScreenLoginState extends State<ScreenLogin> {
                       hintText: "Enter Your Name",
                       hintStyle: const TextStyle(color: Colors.grey),
                     ),
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                   ),
 
                   sizeBox(h: 10),
                   //Started Button
                   ElevatedButton(
                     onPressed: () async {
-                      // Get.off(() => ScreenHomes(),
-                      //     duration: Duration(seconds: 1),
-                      //     transition: Transition.cupertino);
-                      //await handlePermission();
                       if (_formKey.currentState!.validate()) {
                         print(" Validated--------------------");
-                        setValueInSharedprfs(context);
+                        
                         await handlePermission();
                       } else {
                         print("Not Validated--------------------");
@@ -194,11 +251,12 @@ class _ScreenLoginState extends State<ScreenLogin> {
       ),
     );
   }
+
 //It is for store data
   Future<void> setValueInSharedprfs(BuildContext context) async {
     final name = _nameControll.text;
     final sharedpfs = await SharedPreferences.getInstance();
     await sharedpfs.setString("username", name);
-    await handlePermission();
+    //await handlePermission();
   }
 }

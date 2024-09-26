@@ -1,10 +1,7 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_account.dart';
 import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_home_tab.dart';
 import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_music_tab.dart';
 import 'package:echo_beats_music/Presentation/Pages/HomePages/Tabs/screen_playlist_tab.dart';
-import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
-import 'package:echo_beats_music/database/functions_hive/recentlyPlayed/db_function_recently_played.dart';
 import 'package:flutter/material.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 
@@ -20,7 +17,7 @@ class _ScreenHomesState extends State<ScreenHomes> {
 
   // List of widgets for each tab
   final List<Widget> _pages = [
-    HomeTab(),
+    const HomeTab(),
     MusicTab(),
     PlaylistTab(),
     //ScreenAccount()
@@ -51,11 +48,6 @@ class _ScreenHomesState extends State<ScreenHomes> {
             size: 30,
             color: white,
           ),
-          // Icon(
-          //   Icons.account_circle_rounded,
-          //   size: 30,
-          //   color: white,
-          // )
         ],
         onTap: (index) {
           _currentIndex.value = index;

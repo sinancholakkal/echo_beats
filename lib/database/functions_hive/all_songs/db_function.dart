@@ -37,11 +37,11 @@ Future<void> getAllSongs() async {
   allSongNotifier.notifyListeners();
 }
 
-Future<void>deleteFromAllSong(String path)async{
-  final openDB = await Hive.openBox<AllSongModel>('all_song');
- final song =openDB.values.firstWhere((item){
-  return path ==item.songPath;
-  });
-  await openDB.delete(song.id);
-  getAllSongs();
-}
+// Future<void>deleteFromAllSong(String path)async{
+//   final openDB = await Hive.openBox<AllSongModel>('all_song');
+//  final song =openDB.values.firstWhere((item){
+//   return path ==item.songPath;
+//   });
+//   await openDB.delete(song.id);
+//   getAllSongs();
+// }

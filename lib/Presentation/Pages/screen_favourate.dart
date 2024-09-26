@@ -12,9 +12,6 @@ import 'package:on_audio_query/on_audio_query.dart';
 class ScreenFavourate extends StatelessWidget {
   ScreenFavourate({super.key});
 
-  //final AudioPlayer _audioPlayer = AudioPlayer();
-  //audioPlayerfinal _audioPlayer = AudioPlayer();
-
   List<dynamic> sss = [...favouriteClassModelList.value];
 
   @override
@@ -58,8 +55,7 @@ class ScreenFavourate extends StatelessWidget {
                       musicName: value[index].displayNameWOExt,
                       artistName: value[index].artist,
                       operation: () async {
-                        print("---------------------------------------------");
-                        print(favouriteClassModelList.value.length);
+                        
                         AudioPlayerService.player.stop();
 
                         // Create the proper AudioSource with MediaItem

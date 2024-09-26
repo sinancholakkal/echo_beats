@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/database/functions_hive/playlist/db_function_playlist.dart';
 import 'package:echo_beats_music/database/models/playList/playlist_model.dart';
@@ -46,7 +45,6 @@ class ScreenAddPlaylist extends StatelessWidget {
                   ),
                   IconButton(
                       onPressed: () {
-                        print(songModel);
                         showDialogForCreatePlaylist1(context);
                       },
                       icon:const Icon(
@@ -105,8 +103,9 @@ class ScreenAddPlaylist extends StatelessWidget {
                               }
 
                               print("Music added");
-                              Get.back();
+                              
                               }
+                              Get.back();
                               
                             },
                           ),

@@ -1,9 +1,10 @@
+
 import 'package:echo_beats_music/Presentation/Pages/HomePages/screen_home.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_login.dart';
-import 'package:echo_beats_music/main.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:lottie/lottie.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ScreenSplash extends StatefulWidget {
@@ -14,6 +15,7 @@ class ScreenSplash extends StatefulWidget {
 }
 
 class _ScreenSplashState extends State<ScreenSplash> {
+  
   @override
   void initState() {
     super.initState();
@@ -48,16 +50,34 @@ class _ScreenSplashState extends State<ScreenSplash> {
   }
 
   Future<void> userLongedIn()async{
+    await permisionRequesting();
     final sharedprfs = await SharedPreferences.getInstance();
     final longedValue = sharedprfs.getString('username');
     if(longedValue == null || longedValue ==false){
       splashTime();
     }else{
+      await Future.delayed(const Duration(seconds: 3));
       Get.off(()=>const ScreenHomes(),
       transition: Transition.cupertino,
       duration: const Duration(milliseconds: 500)
       );
     }
+  }
+
+  Future<void>permisionRequesting()async{
+   var statusStorage = await Permission.manageExternalStorage.status;
+
+  // Check the status of audio permission
+  var statusAudio = await Permission.audio.status;
+  var storage = await Permission.storage.status;
+
+  if(statusStorage.isDenied && statusAudio.isDenied && storage.isDenied){
+       await Permission.manageExternalStorage.request();
+
+  // Check the status of audio permission
+   await Permission.audio.request();
+  await Permission.storage.request();
+  }
   }
 }
 

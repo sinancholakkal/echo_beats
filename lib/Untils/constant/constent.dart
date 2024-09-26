@@ -10,8 +10,7 @@ import 'package:just_audio/just_audio.dart';
 Widget sizeBox({int h=0,int w=0}){
   return SizedBox(height: h.toDouble(),width: w.toDouble(),);
 }
-// final audioQuery = OnAudioQuery();
-// final AudioPlayer audioPlayer = AudioPlayer();
+
 
 
 class AudioPlayerService {
@@ -19,26 +18,6 @@ class AudioPlayerService {
 
 }
 
-  void deleteSong(String filePath) {
-  final file = File(filePath);
-  print(file);
-  
-  try {
-    if (file.existsSync()) {
-      file.deleteSync();
-      print('File deleted successfully');
-      allSongNotifier.notifyListeners();
-      filterList.notifyListeners();
-        //getAllSongs();
-        //filterList.value =allSongNotifier.value;
-    } else {
-      print('File not exist');
-    }
-  } catch (e) {
-    print('Error deleting file: $e');
-  }finally{
-    deleteFromAllSong(filePath);
-  }
-}
+
 
 

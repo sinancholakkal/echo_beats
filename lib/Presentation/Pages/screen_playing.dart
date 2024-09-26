@@ -1,12 +1,9 @@
 import 'dart:developer';
-import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:echo_beats_music/Presentation/Pages/Settigs/settings.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_add_playlist.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
-import 'package:echo_beats_music/Untils/constant/constent.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
 import 'package:echo_beats_music/database/functions_hive/all_songs/db_function.dart';
 import 'package:echo_beats_music/database/functions_hive/favourite/db_function.dart';
@@ -24,7 +21,6 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ScreenPlaying extends StatefulWidget {
-  //final AudioPlayer audioPlayer;
   final List<dynamic> songModelList;
   int idx;
 
@@ -55,7 +51,7 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
   final _audioQuery = OnAudioQuery();
   int min = 1;
 
-  void playSong() async {
+  Future<void> playSong() async {
     try {
       currentIndex.value = widget.idx;
       songList.clear(); // Clear the previous song list to avoid duplication
@@ -67,11 +63,32 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
               id: element.id.toString(),
               album: element.album ?? "No Album",
               title: element.displayNameWOExt,
-              artUri: Uri.parse(element.id.toString()),
+              //artUri: Uri.parse(element.id.toString()),
             ),
           ),
         );
       }
+//       for (var element in widget.songModelList) {
+//   if (element.uri != null) {
+//     try {
+//       songList.add(
+//         AudioSource.uri(
+//           Uri.parse(element.uri!),
+//           tag: MediaItem(
+//             id: element.id.toString(),
+//             album: element.album ?? "No Album",
+//             title: element.displayNameWOExt,
+//            // artUri: Uri.parse(element.artUri ?? ''), // Ensure artUri is valid
+//           ),
+//         ),
+//       );
+//     } catch (e) {
+//       print("Error parsing URI: ${element.uri}, error: $e");
+//     }
+//   } else {
+//     print("URI is null for song: ${element.displayNameWOExt}");
+//   }
+// }
 
       //It is for reset player
       await AudioPlayerService.player.setAudioSource(
@@ -131,16 +148,27 @@ class _ScreenPlayingState extends State<ScreenPlaying> {
     print("Sleep mode stoped============================================");
   }
 
-  @override
-  void initState() {
-    super.initState();
-    playSong();
+  Future<void>initialize()async{
+    await playSong();
     AudioPlayerService.player.play();
     isPlaying.value = true;
     durationSet();
 
     //playSong();
     chekk();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initialize();
+    // playSong();
+    // AudioPlayerService.player.play();
+    // isPlaying.value = true;
+    // durationSet();
+
+    // //playSong();
+    // chekk();
   }
 
   @override

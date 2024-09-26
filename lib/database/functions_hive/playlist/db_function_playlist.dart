@@ -21,8 +21,6 @@ Future<void> gettingPlaylist() async {
   final db = await Hive.openBox<Playlist>('playlistbox');
  playlistsNotifier.value = db.values.toList();
    playlistsNotifier.notifyListeners();
- //playlistsNotifier.value = db.values.cast<Playlist>().toList();
-
 }
 
 //AddSong to playlist
@@ -33,13 +31,10 @@ Future<void> addSongToPlaylist(
   final playlist = openedBox.values.firstWhere(
     (playlist) => playlist.name == playlistName,
   );
-  // Create a new mutable list from the unmodifiable one
+
   List<PlayListSongModel> updatedSongs = List<PlayListSongModel>.from(playlist.songs);
-  // Add the new song
   updatedSongs.add(song);
-  // Update the playlist with the new songs list
   playlist.songs = updatedSongs;
-  // Save the updated playlist back to the box
   await openedBox.put(playlist.id!, playlist);
   gettingPlaylist();
 }
