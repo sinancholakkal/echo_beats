@@ -147,7 +147,7 @@ Select 'Music and Audio'""",
                             ),
                             children: [
                               const TextSpan(
-                                text: 'Own', // First part
+                                text: 'Echo', // First part
                               ),
                               const TextSpan(
                                 text: '\nMusic\n', // Second part

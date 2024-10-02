@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sinandevoloper.ownmusicplayer">
+    package="com.sinandev.echomusicplayer">
         <!-- Permissions for Android 11 and below -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -28,7 +28,7 @@
         </intent>
     </queries>
     <application
-        android:label="Own Music Player"
+        android:label="Echo Music Player"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
          <activity
