@@ -1,4 +1,5 @@
 import 'package:echo_beats_music/Presentation/Pages/HomePages/screen_home.dart';
+import 'package:echo_beats_music/Presentation/Widgets/wScreenLogin/text_form_field.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
 import 'package:flutter/material.dart';
@@ -18,65 +19,19 @@ class _ScreenLoginState extends State<ScreenLogin> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameControll = TextEditingController();
 
-//   Future<void> handlePermission() async {
-//     var statusStorage = await Permission.manageExternalStorage.status;
+  Future<void> handlePermission() async {
+    // Check the status of manageExternalStorage (for Android 11+)
+    var statusStorage = await Permission.manageExternalStorage.status;
 
-//     var status = await Permission.audio.status;
-//     if (status.isGranted && statusStorage.isGranted) {
-//       Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-//         return const ScreenHomes();
-//       }));
-//     } else if (status.isDenied) {
-//       // Redirect user to settings if permission is denied
-//       showDialog(
-//         context: context,
-//         builder: (context) => AlertDialog(
-//           backgroundColor: Colors.white,
-//           title: const Text(
-//             'Permission Required',
-//             style: TextStyle(color: Colors.black),
-//           ),
-//           content: const Text(
-//             """Please grant audio permission and external storage in settings to continue. Tap 'Open Settings' →
-// Tap 'Permissions' →
-// Select 'Music and Audio'""",
-//             style: TextStyle(color: Colors.black),
-//           ),
-//           actions: [
-//             TextButton(
-//               onPressed: () {
-//                 openAppSettings(); // Redirect to settings
-//               },
-//               child: const Text('Open Settings'),
-//             ),
-//           ],
-//         ),
-//       );
-//     } else if (statusStorage.isDenied) {
-//       await Permission.manageExternalStorage.request();
-//     }
-//   }
+    // Check the status of audio permission
+    var statusAudio = await Permission.audio.status;
+    var storage = await Permission.storage.status;
 
-Future<void> handlePermission() async {
-  // Check the status of manageExternalStorage (for Android 11+)
-  var statusStorage = await Permission.manageExternalStorage.status;
-
-  // Check the status of audio permission
-  var statusAudio = await Permission.audio.status;
-  var storage = await Permission.storage.status;
-
-  // If both permissions are granted, navigate to the home screen
-  if (statusAudio.isGranted||storage.isGranted || statusStorage.isGranted) {
-    await setValueInSharedprfs(context);
-    // Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-    //   return const ScreenHomes();
-    // }));
-    Get.off(()=>const ScreenHomes(),transition: Transition.circularReveal);
-  } else {
-    // Handle denied permissions
-    //statusAudio = await Permission.audio.request();
-
-      // Show an alert to guide the user to grant permissions
+    // If both permissions are granted, navigate to the home screen
+    if (statusAudio.isGranted || storage.isGranted || statusStorage.isGranted) {
+      await setValueInSharedprfs(context);
+      Get.off(() => const ScreenHomes(), transition: Transition.circularReveal);
+    } else {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -102,15 +57,8 @@ Select 'Music and Audio'""",
           ],
         ),
       );
-
-
-    // Request MANAGE_EXTERNAL_STORAGE permission
-    // if (statusStorage.isDenied) {
-    //   await Permission.manageExternalStorage.request();
-    // }
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -166,44 +114,9 @@ Select 'Music and Audio'""",
                       ],
                     ),
                   ),
-                  sizeBox(h: 80), // Adds space between text and TextFormField
-                  TextFormField(
-                    controller: _nameControll,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Please enter your name ";
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      fillColor: Colors.white,
-                      filled: true,
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(10.0), // Rounded corners
-                        borderSide: BorderSide.none, // No visible border
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                            10.0), // Rounded corners when there's an error
-                        borderSide: BorderSide
-                            .none, // No visible border when there's an error
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(
-                            10.0), // Rounded corners when focused
-                        borderSide:
-                            BorderSide.none, // No visible border when focused
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.account_circle_rounded,
-                        color: Colors.grey,
-                      ),
-                      hintText: "Enter Your Name",
-                      hintStyle: const TextStyle(color: Colors.grey),
-                    ),
-                    style: const TextStyle(color: Colors.black),
-                  ),
+                  sizeBox(h: 80),
+                  //textFormFieald----------------------------------------
+                  TextFormFieldLogin(nameControll: _nameControll),
 
                   sizeBox(h: 10),
                   //Started Button
@@ -211,7 +124,6 @@ Select 'Music and Audio'""",
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         print(" Validated--------------------");
-                        
                         await handlePermission();
                       } else {
                         print("Not Validated--------------------");
@@ -260,3 +172,4 @@ Select 'Music and Audio'""",
     //await handlePermission();
   }
 }
+

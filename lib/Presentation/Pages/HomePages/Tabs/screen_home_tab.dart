@@ -403,11 +403,11 @@ class _HomeTabState extends State<HomeTab> {
                       if (revers.isEmpty) {
                         // Filter All Songs based on search input
                         List<dynamic> filterListAll =
-                            filterValue != null && filterValue!.isNotEmpty
+                            filterValue.isNotEmpty
                                 ? songs
                                     .where((song) => song.displayNameWOExt
                                         .toLowerCase()
-                                        .contains(filterValue!.toLowerCase()))
+                                        .contains(filterValue.toLowerCase()))
                                     .toList()
                                 : songs;
 
@@ -464,11 +464,11 @@ class _HomeTabState extends State<HomeTab> {
                       } else {
                         // Recently Played Songs section
                         List<RecentlyPlayedModel> filterList =
-                            filterValue != null && filterValue!.isNotEmpty
+                            filterValue.isNotEmpty
                                 ? revers
                                     .where((song) => song.displayNameWOExt
                                         .toLowerCase()
-                                        .contains(filterValue!.toLowerCase()))
+                                        .contains(filterValue.toLowerCase()))
                                     .toList()
                                 : revers;
 

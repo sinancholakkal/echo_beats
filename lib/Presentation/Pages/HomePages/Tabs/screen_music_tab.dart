@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:echo_beats_music/Presentation/Pages/screen_add_playlist.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_selecte.dart';
+import 'package:echo_beats_music/Presentation/Widgets/wScreenMusicTab.dart/all_song_button.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
@@ -88,23 +89,8 @@ class _MusicTabState extends State<MusicTab> {
               sizeBox(h: 20),
               Row(
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      Get.to(
-                        () => ScreenPlaying(
-                          idx: 0,
-                          songModelList: allSong,
-                        ),
-                        transition: Transition.cupertino,
-                        duration: const Duration(seconds: 1),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.play_circle,
-                      color: white,
-                      size: 40,
-                    ),
-                  ),
+                  //AllSongButton
+                  AllSongPlayButton(allSong: allSong),
                   const Text(
                     "All Songs",
                     style: TextStyle(
@@ -201,12 +187,11 @@ class _MusicTabState extends State<MusicTab> {
                                 }
 
                                 //List<SongModel> filterList = [];
-                                if (filterValue != null &&
-                                    filterValue!.isNotEmpty) {
+                                if (filterValue.isNotEmpty) {
                                   filterList.value = item.data!
                                       .where((song) => song.displayNameWOExt
                                           .toLowerCase()
-                                          .contains(filterValue!.toLowerCase()))
+                                          .contains(filterValue.toLowerCase()))
                                       .toList();
                                 } else {
                                   filterList.value = item.data!;

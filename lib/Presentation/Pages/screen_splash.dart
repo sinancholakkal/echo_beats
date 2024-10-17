@@ -66,14 +66,11 @@ class _ScreenSplashState extends State<ScreenSplash> {
 
   Future<void>permisionRequesting()async{
    var statusStorage = await Permission.manageExternalStorage.status;
-
-  // Check the status of audio permission
   var statusAudio = await Permission.audio.status;
   var storage = await Permission.storage.status;
 
   if(statusStorage.isDenied && statusAudio.isDenied && storage.isDenied){
        await Permission.manageExternalStorage.request();
-
   // Check the status of audio permission
    await Permission.audio.request();
   await Permission.storage.request();

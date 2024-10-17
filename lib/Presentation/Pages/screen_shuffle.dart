@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:typed_data';
 import 'package:echo_beats_music/Presentation/Pages/screen_playing.dart';
 import 'package:echo_beats_music/Presentation/Pages/screen_selecte.dart';
+import 'package:echo_beats_music/Presentation/Widgets/wShuffle/song_add_favorite.dart';
 import 'package:echo_beats_music/Presentation/Widgets/widgets.dart';
 import 'package:echo_beats_music/Untils/Colors/colors.dart';
 import 'package:echo_beats_music/Untils/constant/constent.dart';
@@ -116,7 +117,7 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
                         PopupMenuItem(
                           child: const Text("Add to favorite"),
                           onTap: () {
-                            songAdtoFavorite(value[index]);
+                            songAdtoFavorite(value[index],_audioQuery);
                           },
                         ),
                         PopupMenuItem(
@@ -139,36 +140,5 @@ class _ScreenShuffleState extends State<ScreenShuffle> {
         ),
       ),
     );
-  }
-
-  void songAdtoFavorite(var song) async {
-    Uint8List? imagebyte;
-    if (!isAlreadyFav(song)) {
-      if (await _audioQuery.queryArtwork(song.id, ArtworkType.AUDIO) != null) {
-        imagebyte = await _audioQuery.queryArtwork(song.id, ArtworkType.AUDIO);
-      }
-      final result = SongModelClass(
-          id: song.id,
-          displayNameWOExt: song.displayNameWOExt,
-          artist: song.artist ?? "unknown",
-          uri: song.uri,
-          imageUri: imagebyte ?? Uint8List(0),
-          songPath: song is RecentlyPlayedModel ||
-                  song is PlayListSongModel ||
-                  song is AllSongModel
-              ? song.songPath
-              : song.data);
-      //Adding song in favoraited
-      addSongToFavourite(result);
-      showAddedToast(msg: "Favorited");
-    } else {
-      showAddedToast(msg: "This song already exists in the favorite");
-    }
-  }
-
-  bool isAlreadyFav(var song) {
-    return favouriteClassModelList.value.any((item) {
-      return item.id == song.id;
-    });
   }
 }
